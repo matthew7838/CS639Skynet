@@ -9,25 +9,29 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 - Python
 - Vue
 - Electron
-- Scarpy (Web scraping techniques)
+- Scarpy (Web scraping techniques)】
+
+## Usage
+```bash
+# installing virtual environment (recommended, not required), may need --user flag
+py -m pip install --user virtualenv
+
+# create new venv environment (do in backend folder)
+python -m venv venv
+
+# starting venv in windows with powershell/visual studio terminal
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process venv\Scripts\Activate.ps1
+
+# starting venv on mac
+source myvenv/bin/activate
+
+# install Flask (do in venv)
+pip install -U Flask pip install flask flask-cors
+
+# install environmental variables
+pip install python-dotenv
+
+```
 
 ## Authors and acknowledgment
 Show your appreciation to those who have contributed to the project.
-
-## installing virtual environment (recommended, not required), may need --user flag
-py -m pip install --user virtualenv
-
-## create new venv environment (do in backend folder)
-python -m venv venv
-
-## starting venv in windows with powershell/visual studio terminal
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process venv\Scripts\Activate.ps1
-
-## starting venv on mac
-source myvenv/bin/activate
-
-## install Flask (do in venv)
-pip install -U Flask pip install flask flask-cors
-
-## install environmental variables
-pip install python-dotenv
