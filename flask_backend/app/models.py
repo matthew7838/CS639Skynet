@@ -9,6 +9,7 @@ class Orbit(db.Model):
     apogee = db.Column(db.Integer)
     primary_planet = db.Column(db.String(50))
 
+
 class Satellites(db.Model):
     JCAT = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(50))
@@ -24,12 +25,14 @@ class Satellites(db.Model):
     altname = db.Column(db.String(100))
     dest = db.Column(db.String(100))
 
+
 class Dates(db.Model):
     JCAT = db.Column(db.String(50), primary_key=True)
     Ldate = db.Column(db.DateTime)
     Sdate = db.Column(db.DateTime)
     Ddate = db.Column(db.DateTime)
     Odate = db.Column(db.DateTime)
+
 
 class Specs(db.Model):
     JCAT = db.Column(db.String(50), primary_key=True)
@@ -41,3 +44,9 @@ class Specs(db.Model):
     tot_mass = db.Column(db.Integer)
     span = db.Column(db.Float)
     shape = db.Column(db.String(50))
+
+
+class Deletes(db.Model):
+    JCAT = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(50))
+    Deletion_date = db.Column(db.DateTime)
