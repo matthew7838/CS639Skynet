@@ -8,7 +8,7 @@ def main():
     spiders = [Planet4589spiderSpider, ReentrypredictorSpider, OrbitalfocusspiderSpider]
     settings = get_project_settings()
     process = CrawlerProcess(settings)
-    #process.crawl(OrbitalfocusspiderSpider)
+    process.crawl(OrbitalfocusspiderSpider)
     process.crawl(Planet4589spiderSpider)
     process.crawl(ReentrypredictorSpider)
     process.start()
