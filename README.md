@@ -31,6 +31,9 @@ pip install -U Flask pip install flask flask-cors
 # install environmental variables
 pip install python-dotenv
 
+# install flask sqlalchemy
+pip install -U Flask-SQLAlchemy
+
 ```
 
 ## Authors and acknowledgment
