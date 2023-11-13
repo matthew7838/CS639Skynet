@@ -32,6 +32,10 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
+                  <el-menu-item index="/1">
+                    <i class="el-icon-house"></i>
+                    <span slot="title">Export</span>
+                  </el-menu-item>
         </el-menu>
       </el-aside>
 
