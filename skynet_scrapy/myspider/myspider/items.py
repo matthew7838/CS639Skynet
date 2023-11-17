@@ -10,6 +10,22 @@ import scrapy
 #
 #     pass
 
+class OrbitalfocusItem(scrapy.Item):
+    cat_no = scrapy.Field()
+    designation = scrapy.Field()
+    name = scrapy.Field()
+    date = scrapy.Field()
+
+class ReentrypredictorItem(scrapy.Item):
+    object = scrapy.Field()
+    #name = scrapy.Field()
+    mission = scrapy.Field()
+    reentry_type = scrapy.Field()
+    launch_date = scrapy.Field()
+    predicted_reentry_date = scrapy.Field()
+    norad_num = scrapy.Field()
+    cospar_num = scrapy.Field()
+
 class Planet4589Item(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()

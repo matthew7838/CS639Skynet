@@ -71,9 +71,11 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "myspider.pipelines.MyspiderPipeline": 300,
-#}
+ITEM_PIPELINES = {
+     "myspider.pipelines.OrbitalfocusPipeline": 300,
+     'myspider.pipelines.ReentrypredictorPipeline': 400,
+     'myspider.pipelines.Planet4589Pipeline': 500,
+ }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -100,7 +102,3 @@ ROBOTSTXT_OBEY = True
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
-
-ITEM_PIPELINES = {
-    'myspider.pipelines.Planet4589FilterPipeline': 300,
-}
