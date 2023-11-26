@@ -3,6 +3,7 @@ from myspider.spiders.planet4589 import Planet4589spiderSpider
 from myspider.spiders.reentrypredictor import ReentrypredictorSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
+from myspider.Gatherer import Gatherer
 
 def main():
     spiders = [Planet4589spiderSpider, ReentrypredictorSpider, OrbitalfocusspiderSpider]
@@ -12,6 +13,8 @@ def main():
     process.crawl(Planet4589spiderSpider)
     process.crawl(ReentrypredictorSpider)
     process.start()
+    gatherer = Gatherer()
+    gatherer.gather()
 
 if __name__ == '__main__':
     main()

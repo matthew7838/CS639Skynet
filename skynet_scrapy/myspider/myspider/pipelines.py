@@ -27,6 +27,8 @@ class OrbitalfocusPipeline:
                          designation text,
                          name text,
                          date text)""")
+        # extra line
+        self.connection.commit()
 
     def close_spider(self, spider):
         try:
@@ -88,6 +90,8 @@ class ReentrypredictorPipeline:
                          predicted_reentry_date text,
                          norad_num text,
                          cospar_num text)""")
+        # extra line
+        self.connection.commit()
 
     def close_spider(self, spider):
         try:
@@ -180,6 +184,8 @@ class Planet4589Pipeline:
                          oporbit text,
                          oqual text,
                          altnames text)""")
+        # extra line
+        self.connection.commit()
 
     def close_spider(self, spider):
         try:
