@@ -4,12 +4,12 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                          height: 60px;
-                          color: white;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                        ">
+                              height: 60px;
+                              color: white;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                            ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -32,10 +32,10 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
-                  <el-menu-item index="/1">
-                    <i class="el-icon-house"></i>
-                    <span slot="title">Export</span>
-                  </el-menu-item>
+          <el-menu-item index="/1">
+            <i class="el-icon-house"></i>
+            <span slot="title">Export</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -50,22 +50,30 @@
 
         <!--        Main Page-->
         <el-main>
+
+
           <el-table :data="tableData" style="width: 100%" :row-style="
             ({ row }) =>
               row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
           ">
             <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-            <el-table-column prop="un_registry_country" label="un_registry_country">
+            <el-table-column prop="un_registry_country" label="un_registry_country" :filters="[
+              { text: 'Country11', value: 'Country11' },
+              { text: 'Country12', value: 'Country12' },
+              { text: 'Country13', value: 'Country13' },
+              { text: 'Country14', value: 'Country14' },
+            ]" :filter-method="filterHandler">
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
                 <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
                 <!-- If the row is in editing mode, show the input with tooltip -->
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country"
+                  placement="top-start">
                   <el-input v-model="scope.row.un_registry_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator_country" label="operator_country">
+            <el-table-column prop="operator_country" label="operator_country" >
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
@@ -259,6 +267,10 @@ export default {
       // Restore the original data from the backup
       Object.assign(row, this.backupRow);
       row.editing = false;
+    },
+    filterHandler(value, row) {
+      // Assuming you want to filter based on the satellite_name property
+      return row.un_registry_country === value;
     },
   },
 };
