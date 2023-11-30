@@ -36,6 +36,7 @@
 
 <script>
 import ValidCode from "@/components/ValidCode";
+import axios from "axios";
 
 export default {
   name: "Login",
@@ -43,7 +44,6 @@ export default {
     ValidCode
   },
   data() {
-
     // Verification code verification
     const validateCode = (rule, value, callback) => {
       if (value === '') {
@@ -83,20 +83,15 @@ export default {
       this.code = code.toLowerCase()
     },
     login() {
-      this.$refs['loginRef'].validate((valid) => {
-        if (valid) {
-          // Verification passed
-          this.$request.post('/login', this.user).then(res => {
-            if (res.code === '200') {
-              this.$router.push('/')
-              this.$message.success('Login Success')
-              localStorage.setItem("honey-user", JSON.stringify(res.data))  // Store user data
-            } else {
-              this.$message.error(res.msg)
-            }
-          })
-        }
-      })
+      axios.post('http://localhost:8000/api/login', this.user, {headers: {'Content-Type': 'application/json'}})
+        .then(response => {
+          // Handle the token as per your requirement
+          localStorage.setItem('authToken', response.data.token);
+          this.$router.push('/'); // Redirect to homepage or dashboard
+        })
+        .catch(error => {
+          this.error = error.response.data.error;
+        })
     }
   }
 }

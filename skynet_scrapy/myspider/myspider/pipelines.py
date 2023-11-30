@@ -16,8 +16,8 @@ class OrbitalfocusPipeline:
         hostname = 'localhost' # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
-        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        database = 'postgres' # we don't need this for this to work
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password, database=database)
         self.cur = self.connection.cursor()
 
         self.cur.execute("""
@@ -72,9 +72,8 @@ class ReentrypredictorPipeline:
         hostname = 'localhost' # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
-
-        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        database = 'postgres' # we don't need this for this to work
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password, database=database)
         self.cur = self.connection.cursor()
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS aero(
@@ -126,9 +125,8 @@ class Planet4589Pipeline:
         hostname = 'localhost' # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
-
-        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        database = 'postgres' # we don't need this for this to work
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password, database=database)
         self.cur = self.connection.cursor()
         # changed one of the column from primary to primry for obvious reasons
         self.cur.execute("""

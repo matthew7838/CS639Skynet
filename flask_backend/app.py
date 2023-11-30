@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite, SatelliteEditRecord, RecordTable
+from models import db, Satellite, SatelliteEditRecord, RecordTable, User
 import os
+import traceback
+import jwt
 from sqlalchemy import func
-from datetime import datetime
+from datetime import datetime, timedelta
+
 
 load_dotenv()
 
@@ -16,8 +19,47 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+
+    new_user = User(username=username)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'User registered successfully'}), 201
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+        # Generate token. Here, you need a secret key for JWT
+        token = jwt.encode({
+            'username': user.username,
+            'exp': datetime.utcnow() + timedelta(hours=1)
+        }, app.config['SECRET_KEY'], algorithm='HS256')
+
+        return jsonify({'token': token}), 200
+
+    return jsonify({'error': 'Invalid username or password'}), 401
+
 
 @app.route('/api/satellites', methods=['GET'])
 def get_satellites():
@@ -199,6 +241,8 @@ def get_edit_records():
         app.logger.error('Error in get_edit_records: ' + str(e))
         app.logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
