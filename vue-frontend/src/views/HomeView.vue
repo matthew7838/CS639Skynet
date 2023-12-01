@@ -4,12 +4,12 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                                                height: 60px;
-                                                color: white;
-                                                display: flex;
-                                                align-items: center;
-                                                justify-content: center;
-                                              ">
+                                                        height: 60px;
+                                                        color: white;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                      ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -47,22 +47,23 @@
             <el-breadcrumb-item :to="{ path: '/' }">Home Page</el-breadcrumb-item>
           </el-breadcrumb>
 
+          <!-- Search input for satellite name -->
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          </el-input>
           <el-dropdown>
             <el-button>
               Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-checkbox-group v-model="selectedColumns">
-                <el-checkbox label="satellite_name">Satellite Name</el-checkbox>
                 <el-checkbox label="un_registry_country">UN Registry Country</el-checkbox>
+                <el-checkbox label="operator_country">Operator Country</el-checkbox>
+                <el-checkbox label="operator">operator</el-checkbox>
                 <!-- Repeat for other columns -->
               </el-checkbox-group>
             </el-dropdown-menu>
           </el-dropdown>
 
-          <!-- Search input for satellite name -->
-          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
-          </el-input>
 
         </el-header>
 
@@ -70,20 +71,19 @@
         <el-main>
 
 
-          <el-table :data="filteredData" style="width: 100%" :row-style="
+          <el-table :data="filteredData" border style="width: 100%" :row-style="
             ({ row }) =>
               row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
           ">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"
-              v-if="selectedColumns.includes('satellite_name')">
+            <el-table-column fixed prop="satellite_name" label="satellite_name">
               <!-- copy v-if to filter column -->
             </el-table-column>
             <el-table-column prop="un_registry_country" label="un_registry_country" :filters="[
               { text: 'Country11', value: 'Country11' },
               { text: 'Country12', value: 'Country12' },
               { text: 'Country13', value: 'Country13' },
-              { text: 'Country14', value: 'Country14' },]" :filter-method="filterHandler" filter-placement="bottom-start"
-              v-if="selectedColumns.includes('un_registry_country')">
+              { text: 'Country14', value: 'Country14' },]" :filter-method="filterHandler"
+              filter-placement="bottom-start" v-if="selectedColumns.includes('un_registry_country')">
               <!-- copy template to if want edit function -->
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
@@ -95,7 +95,8 @@
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator_country" label="operator_country">
+            <el-table-column prop="operator_country" label="operator_country"
+              v-if="selectedColumns.includes('operator_country')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
@@ -103,7 +104,7 @@
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator" label="operator">
+            <el-table-column prop="operator" label="operator" v-if="selectedColumns.includes('operator')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator }}</div>
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator" placement="top-start">
@@ -212,7 +213,7 @@ export default {
       backupRow: null,
       filtersActive: false,
       // TODO put all columns in selectedColumns  expect pk  
-      selectedColumns: ['satellite_name', 'un_registry_country', 'operator_country'],
+      selectedColumns: ['un_registry_country', 'operator_country', 'operator'],
       searchQuery: '',
     };
   },

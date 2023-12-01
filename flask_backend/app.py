@@ -84,12 +84,12 @@ def update_status():
 @app.route('/api/history', methods=['GET'])
 def get_history_records():
     try:
-        # Perform the group-by query using SQLAlchemy
+        # Perform the query to get all records
         results = db.session.query(
             RecordTable.name, 
             RecordTable.date, 
-            func.max(RecordTable.satellite_name).label('satellite_name')
-        ).group_by(RecordTable.name, RecordTable.date).all()
+            RecordTable.satellite_name
+        ).all()
 
         # Serialize the results into a list of dictionaries
         data = [{'name': r.name, 'date': r.date, 'satellite_name': r.satellite_name} for r in results]
@@ -102,42 +102,12 @@ def get_history_records():
 @app.route('/api/history/details', methods=['GET'])
 def get_jcat_details():
     try:
-        name = request.args.get('name')
-        date = request.args.get('date')
-
-        # Parse the string into a datetime object
-        date_obj = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
-
-        # Format the datetime object into the desired format
-        # Approach 1: Using static microseconds
-        formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S.826544')
-
-        # Query RecordTable to get JCAT values
-        SATELLITE_NAME_RECORDS = RecordTable.query.filter_by(name=name, date=formatted_date).all()
-
-
-        if not SATELLITE_NAME_RECORDS:
-            app.logger.info(f'No records found for Name: {name}, Date: {date}')
-            return jsonify([])
-
-        # Log query results
-        app.logger.info(f'Found {len(SATELLITE_NAME_RECORDS)} records in RecordTable')
-
-        SATELLITE_NAME_LIST = [record.satellite_name for record in SATELLITE_NAME_RECORDS]
-
-        # Query SkynetSatellite for each JCAT
+        satellite_name = request.args.get('satellite_name')
+        satellites = Satellite.query.filter_by(satellite_name=satellite_name).all()
         satellites_details = []
-        for satellite_name in SATELLITE_NAME_LIST:
-            satellites = Satellite.query.filter_by(satellite_name=satellite_name).all()
-            
-            # Log each satellite detail query
-            app.logger.info(f'Queried Satellite details for {satellite_name}, found {len(satellites)} entries')
-
-            satellites_details.extend([satellite.to_dict() for satellite in satellites])
-
+        satellites_details.extend([satellite.to_dict() for satellite in satellites])
         return jsonify(satellites_details)
     except Exception as e:
-        # Log the full stack trace
         app.logger.error('Error in get_jcat_details: ' + str(e))
         return jsonify({"error": str(e)}), 500
 
