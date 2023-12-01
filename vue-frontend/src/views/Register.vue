@@ -17,10 +17,10 @@
             <el-input prefix-icon="el-icon-lock" size="medium" show-password placeholder="Please Confirm Password" v-model="user.confirmPass"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="info" style="width: 100%" @click="register">Register</el-button>
+            <el-button type="primary" style="width: 100%" @click="register">Register</el-button>
           </el-form-item>
           <div style="display: flex">
-            <div style="flex: 1">Having account？<span style="color: #6e77f2; cursor: pointer" @click="$router.push('/login')">Login</span></div>
+            <div style="flex: 1">Having account？<span style="color: #669fef; cursor: pointer" @click="$router.push('/login')">Login</span></div>
           </div>
         </el-form>
       </div>
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-
+import axios from "axios";
 export default {
   name: "Register",
   data() {
@@ -70,15 +70,20 @@ export default {
     register() {
       this.$refs['registerRef'].validate((valid) => {
         if (valid) {
-          // Verification passed
-          this.$request.post('/register', this.user).then(res => {
-            if (res.code === '200') {
-              this.$router.push('/login')
-              this.$message.success('Registration Success')
-            } else {
-              this.$message.error(res.msg)
-            }
-          })
+          const userData = {
+            username: this.user.username,
+            password: this.user.password
+          };
+          axios.post('http://localhost:8000/api/register', userData) // 修改请求路径和数据
+            .then(response => {
+              // 根据你的后端逻辑进行适当的响应处理
+              this.$router.push('/login');
+              // 显示成功或错误消息
+            })
+            .catch(error => {
+              console.error(error.response.data); // 错误处理
+              // 显示错误消息
+            });
         }
       })
     }

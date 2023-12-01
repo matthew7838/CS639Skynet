@@ -4,18 +4,18 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                                                        height: 60px;
-                                                        color: white;
-                                                        display: flex;
-                                                        align-items: center;
-                                                        justify-content: center;
-                                                      ">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
+                              height: 60px;
+                              color: white;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                            ">
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-          :default-active="$route.path">
+                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+                 :default-active="$route.path">
           <el-menu-item index="/">
             <i class="el-icon-house"></i>
             <span slot="title">Home Page</span>
@@ -32,9 +32,9 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
-          <el-menu-item index="/1">
-            <i class="el-icon-house"></i>
-            <span slot="title">Export</span>
+          <el-menu-item @click="logout">
+            <i class="el-icon-switch-button"></i>
+            <span slot="title">Logout</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -90,7 +90,7 @@
                 <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
                 <!-- If the row is in editing mode, show the input with tooltip -->
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country"
-                  placement="top-start">
+                            placement="top-start">
                   <el-input v-model="scope.row.un_registry_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -99,7 +99,8 @@
               v-if="selectedColumns.includes('operator_country')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country"
+                            placement="top-start">
                   <el-input v-model="scope.row.operator_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -131,7 +132,8 @@
             <el-table-column prop="detailed_purpose" label="detailed_purpose">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.detailed_purpose }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose"
+                            placement="top-start">
                   <el-input v-model="scope.row.detailed_purpose" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -185,11 +187,14 @@
             <el-table-column fixed="right" label="Operations">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
-                  @click="startEdit(scope.row)">Edit</el-button>
+                           @click="startEdit(scope.row)">Edit
+                </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                  @click="saveEdit(scope.row)">Save</el-button>
+                           @click="saveEdit(scope.row)">Save
+                </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                  @click="cancelEdit(scope.row)">Cancel</el-button>
+                           @click="cancelEdit(scope.row)">Cancel
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -202,6 +207,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -221,10 +227,14 @@ export default {
     this.fetchSatellites();
   },
   methods: {
+    logout() {
+      localStorage.removeItem('authToken'); // 清除本地存储中的 token
+      this.$router.push('/login'); // 重定向到登录页面
+    },
     async fetchSatellites() {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/satellites"
+            "http://localhost:8000/api/satellites"
         ); // replace with your Flask app URL
         this.tableData = response.data.map((row) => ({
           ...row,
@@ -239,7 +249,7 @@ export default {
       this.tableData.splice(index, 1); // Remove the row
       // You may also want to delete the row from your backend/database
     },
-    tableRowClassName({ row, rowIndex }) {
+    tableRowClassName({row, rowIndex}) {
       // Here, you can specify a condition to highlight rows that need attention
       if (rowIndex === 2) {
         return "highlight-row";
@@ -276,12 +286,12 @@ export default {
           edit_records: edit_records,
           name: "tony"
         })
-          .then(response => {
-            console.log('Edit records sent successfully', response);
-          })
-          .catch(error => {
-            console.error('Error sending edit records', error);
-          });
+            .then(response => {
+              console.log('Edit records sent successfully', response);
+            })
+            .catch(error => {
+              console.error('Error sending edit records', error);
+            });
       }
 
       // Clear the backup since changes are saved
@@ -418,7 +428,7 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button+.el-button {
+.el-button + .el-button {
   margin-left: 0px;
 }
 
