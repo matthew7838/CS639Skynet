@@ -2,12 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from models import db, Satellite, SatelliteEditRecord, RecordTable, User
+from functools import wraps
 import os
 import traceback
 import jwt
 from sqlalchemy import func
 from datetime import datetime, timedelta
-
 
 load_dotenv()
 
@@ -25,6 +25,8 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -53,12 +55,34 @@ def login():
         # Generate token. Here, you need a secret key for JWT
         token = jwt.encode({
             'username': user.username,
+            'login_date': datetime.now().date().isoformat(),
             'exp': datetime.utcnow() + timedelta(hours=1)
         }, app.config['SECRET_KEY'], algorithm='HS256')
 
         return jsonify({'token': token}), 200
 
     return jsonify({'error': 'Invalid username or password'}), 401
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/some-protected-route')
+@token_required
+def protected_route():
+    return 'This is a protected route.'
 
 
 @app.route('/api/satellites', methods=['GET'])
@@ -68,13 +92,14 @@ def get_satellites():
         results = Satellite.query.filter(Satellite.data_status != 2).all()
 
         # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results] # Make sure this method exists in your model
+        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
 
         return jsonify(data)
     except Exception as e:
         # Log the exception for debugging purposes
         print("Error:", e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/removed', methods=['GET'])
 def get_removed_satellites():
@@ -83,12 +108,13 @@ def get_removed_satellites():
         results = Satellite.query.filter(Satellite.data_status == 1).all()
 
         # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results] # Assuming you have a to_dict() method in your model
+        data = [row.to_dict() for row in results]  # Assuming you have a to_dict() method in your model
 
         return jsonify(data)
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/update-status', methods=['POST'])
 def update_status():
@@ -121,15 +147,15 @@ def update_status():
         db.session.rollback()
         print(f"Exception occurred: {e}")  # Debug print
         return jsonify({"error": str(e)}), 500
-    
+
 
 @app.route('/api/history', methods=['GET'])
 def get_history_records():
     try:
         # Perform the group-by query using SQLAlchemy
         results = db.session.query(
-            RecordTable.name, 
-            RecordTable.date, 
+            RecordTable.name,
+            RecordTable.date,
             func.max(RecordTable.satellite_name).label('satellite_name')
         ).group_by(RecordTable.name, RecordTable.date).all()
 
@@ -140,6 +166,7 @@ def get_history_records():
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/history/details', methods=['GET'])
 def get_jcat_details():
@@ -157,7 +184,6 @@ def get_jcat_details():
         # Query RecordTable to get JCAT values
         SATELLITE_NAME_RECORDS = RecordTable.query.filter_by(name=name, date=formatted_date).all()
 
-
         if not SATELLITE_NAME_RECORDS:
             app.logger.info(f'No records found for Name: {name}, Date: {date}')
             return jsonify([])
@@ -171,7 +197,7 @@ def get_jcat_details():
         satellites_details = []
         for satellite_name in SATELLITE_NAME_LIST:
             satellites = Satellite.query.filter_by(satellite_name=satellite_name).all()
-            
+
             # Log each satellite detail query
             app.logger.info(f'Queried Satellite details for {satellite_name}, found {len(satellites)} entries')
 
@@ -207,7 +233,8 @@ def edit_data():
             db.session.add(new_edit_record)
 
             # Update skynet_satellites
-            update_result = Satellite.query.filter_by(satellite_name=record['satellite_name']).update({record['column']: record['newValue']})
+            update_result = Satellite.query.filter_by(satellite_name=record['satellite_name']).update(
+                {record['column']: record['newValue']})
             print(f"Update result for satellite_name {record['satellite_name']}: {update_result}")  # Debug print
 
         db.session.commit()
@@ -216,7 +243,8 @@ def edit_data():
         db.session.rollback()
         print(f"Exception occurred: {e}")  # More detailed error message
         return jsonify({'error': str(e)}), 500
-    
+
+
 @app.route('/api/get-edit-records', methods=['GET'])
 def get_edit_records():
     try:
@@ -241,7 +269,6 @@ def get_edit_records():
         app.logger.error('Error in get_edit_records: ' + str(e))
         app.logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-
 
 
 if __name__ == "__main__":
