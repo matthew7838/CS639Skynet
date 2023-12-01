@@ -1,26 +1,26 @@
 <template>
   <div class="ValidCode disabled-select" style="width: 100%; height: 100%" @click="refreshCode">
-    <span v-for="(item, index) in codeList" :key="index" :style="getStyle(item)">{{item.code}}</span>
+    <span v-for="(item, index) in codeList" :key="index" :style="getStyle(item)">{{ item.code }}</span>
   </div>
 </template>
 
 <script>
 export default {
   name: 'validCode',
-  data () {
+  data() {
     return {
       length: 4,
       codeList: []
     }
   },
-  mounted () {
+  mounted() {
     this.createdCode()
   },
   methods: {
-    refreshCode () {
+    refreshCode() {
       this.createdCode()
     },
-    createdCode () {
+    createdCode() {
       let len = this.length,
           codeList = [],
           chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz0123456789',
@@ -40,7 +40,7 @@ export default {
       // Send current data
       this.$emit('update:value', codeList.map(item => item.code).join(''))
     },
-    getStyle (data) {
+    getStyle(data) {
       return `color: ${data.color}; font-size: ${data.fontSize}; padding: ${data.padding}; transform: ${data.transform}`
     }
   }
@@ -48,12 +48,13 @@ export default {
 </script>
 
 <style>
-.ValidCode{
+.ValidCode {
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
 }
+
 .ValidCode span {
   display: inline-block;
   font-size: 18px;

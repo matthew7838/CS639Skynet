@@ -98,7 +98,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-myenv/
+
+myenv
 
 # IntelliJ / PyCharm specific 
 .idea/

@@ -3,12 +3,12 @@
         <!--    SideBar  -->
         <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
             <div style="
-                              height: 60px;
-                              color: white;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                            ">
+                    height: 60px;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
                 <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
             </div>
 
@@ -42,11 +42,16 @@
                 <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
                     <el-breadcrumb-item :to="{ path: '/' }">History Page</el-breadcrumb-item>
                 </el-breadcrumb>
+                <!-- Search input for satellite name -->
+                <el-input v-model="searchQuery" placeholder="Search by Satellite Name"
+                    style="width: 300px; margin-left: 20px;">
+                </el-input>
             </el-header>
             <el-main>
-                <el-table :data="historyData" style="width: 100%">
+                <el-table :data="filteredData" style="width: 100%">
                     <el-table-column prop="name" label="Name"></el-table-column>
                     <el-table-column prop="date" label="Date" width="180"></el-table-column>
+                    <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
                     <el-table-column label="Operations" width="100">
                         <template slot-scope="scope">
                             <el-button type="text" size="small" @click="showDetails(scope.row)">Show</el-button>
@@ -107,10 +112,22 @@ export default {
             historyData: [],
             showJCATModal: false,
             jcatDetails: [],
+            searchQuery: '',
         };
     },
     mounted() {
         this.fetchHistory();
+    },
+    computed: {
+        // Add a computed property for filtering data
+        filteredData() {
+            if (this.searchQuery) {
+                return this.historyData.filter(item =>
+                    item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            }
+            return this.historyData;
+        },
     },
     methods: {
         async fetchHistory() {
@@ -126,10 +143,10 @@ export default {
         },
         async showDetails(row) {
             try {
-                const response = await axios.get(`http://localhost:8000/api/history/details?name=${row.name}&date=${row.date}`);
-                // Set the JCAT details to a data property and open the modal
-                this.jcatDetails = response.data;
-                this.showJCATModal = true;
+                const url = `http://localhost:8000/api/history/details?satellite_name=${encodeURIComponent(row.satellite_name)}`;
+                const response = await axios.get(url);  // Fetch data from the API
+                this.jcatDetails = response.data;       // Set the JCAT details to a data property
+                this.showJCATModal = true;              // Open the modal
             } catch (error) {
                 console.error("There was an error fetching the JCAT details:", error);
             }

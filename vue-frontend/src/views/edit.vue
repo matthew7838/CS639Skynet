@@ -5,12 +5,11 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                            height: 60px;
-                            color: white;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                          ">
+            height: 60px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -41,13 +40,17 @@
         <el-header>
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
-            <el-breadcrumb-item :to="{ path: '/' }">Home Page</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/' }">Edit Page</el-breadcrumb-item>
           </el-breadcrumb>
+
+          <!-- Search input for satellite name -->
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          </el-input>
         </el-header>
 
         <!--        Main Page-->
         <el-main>
-          <el-table :data="tableData" style="width: 100%">
+          <el-table :data="filteredData" style="width: 100%">
             <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
             <el-table-column prop="column_name" label="Column Name"></el-table-column>
             <el-table-column prop="old_value" label="Old Value"></el-table-column>
@@ -70,11 +73,23 @@ export default {
     return {
       isCollapse: false,
       asideWidth: "200px",
-      tableData: []
+      tableData: [],
+      searchQuery: '',
     };
   },
   mounted() {
     this.fetchEditRecords();
+  },
+  computed: {
+    // Add a computed property for filtering data
+    filteredData() {
+      if (this.searchQuery) {
+        return this.tableData.filter(item => 
+          item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      }
+      return this.tableData;
+    },
   },
   methods: {
     async fetchEditRecords() {

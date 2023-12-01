@@ -4,18 +4,18 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                          height: 60px;
-                          color: white;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                        ">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
+                              height: 60px;
+                              color: white;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                            ">
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-          :default-active="$route.path">
+                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+                 :default-active="$route.path">
           <el-menu-item index="/">
             <i class="el-icon-house"></i>
             <span slot="title">Home Page</span>
@@ -32,10 +32,10 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
-                  <el-menu-item index="/1">
-                    <i class="el-icon-house"></i>
-                    <span slot="title">Export</span>
-                  </el-menu-item>
+          <el-menu-item @click="logout">
+            <i class="el-icon-switch-button"></i>
+            <span slot="title">Logout</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -46,34 +46,66 @@
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Home Page</el-breadcrumb-item>
           </el-breadcrumb>
+
+          <!-- Search input for satellite name -->
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          </el-input>
+          <el-dropdown>
+            <el-button>
+              Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-checkbox-group v-model="selectedColumns">
+                <el-checkbox label="un_registry_country">UN Registry Country</el-checkbox>
+                <el-checkbox label="operator_country">Operator Country</el-checkbox>
+                <el-checkbox label="operator">operator</el-checkbox>
+                <!-- Repeat for other columns -->
+              </el-checkbox-group>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+
         </el-header>
 
         <!--        Main Page-->
         <el-main>
-          <el-table :data="tableData" style="width: 100%" :row-style="
+
+
+          <el-table :data="filteredData" border style="width: 100%" :row-style="
             ({ row }) =>
               row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
           ">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-            <el-table-column prop="un_registry_country" label="un_registry_country">
+            <el-table-column fixed prop="satellite_name" label="satellite_name">
+              <!-- copy v-if to filter column -->
+            </el-table-column>
+            <el-table-column prop="un_registry_country" label="un_registry_country" :filters="[
+              { text: 'Country11', value: 'Country11' },
+              { text: 'Country12', value: 'Country12' },
+              { text: 'Country13', value: 'Country13' },
+              { text: 'Country14', value: 'Country14' },]" :filter-method="filterHandler"
+              filter-placement="bottom-start" v-if="selectedColumns.includes('un_registry_country')">
+              <!-- copy template to if want edit function -->
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
                 <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
                 <!-- If the row is in editing mode, show the input with tooltip -->
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country"
+                            placement="top-start">
                   <el-input v-model="scope.row.un_registry_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator_country" label="operator_country">
+            <el-table-column prop="operator_country" label="operator_country"
+              v-if="selectedColumns.includes('operator_country')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country"
+                            placement="top-start">
                   <el-input v-model="scope.row.operator_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator" label="operator">
+            <el-table-column prop="operator" label="operator" v-if="selectedColumns.includes('operator')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator }}</div>
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator" placement="top-start">
@@ -100,7 +132,8 @@
             <el-table-column prop="detailed_purpose" label="detailed_purpose">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.detailed_purpose }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose" placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose"
+                            placement="top-start">
                   <el-input v-model="scope.row.detailed_purpose" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -154,11 +187,14 @@
             <el-table-column fixed="right" label="Operations">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
-                  @click="startEdit(scope.row)">Edit</el-button>
+                           @click="startEdit(scope.row)">Edit
+                </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                  @click="saveEdit(scope.row)">Save</el-button>
+                           @click="saveEdit(scope.row)">Save
+                </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                  @click="cancelEdit(scope.row)">Cancel</el-button>
+                           @click="cancelEdit(scope.row)">Cancel
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -171,6 +207,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -180,16 +217,24 @@ export default {
       tableData: [],
       editDialogVisible: false,
       backupRow: null,
+      filtersActive: false,
+      // TODO put all columns in selectedColumns  expect pk  
+      selectedColumns: ['un_registry_country', 'operator_country', 'operator'],
+      searchQuery: '',
     };
   },
   mounted() {
     this.fetchSatellites();
   },
   methods: {
+    logout() {
+      localStorage.removeItem('authToken'); // 清除本地存储中的 token
+      this.$router.push('/login'); // 重定向到登录页面
+    },
     async fetchSatellites() {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/satellites"
+            "http://localhost:8000/api/satellites"
         ); // replace with your Flask app URL
         this.tableData = response.data.map((row) => ({
           ...row,
@@ -204,7 +249,7 @@ export default {
       this.tableData.splice(index, 1); // Remove the row
       // You may also want to delete the row from your backend/database
     },
-    tableRowClassName({ row, rowIndex }) {
+    tableRowClassName({row, rowIndex}) {
       // Here, you can specify a condition to highlight rows that need attention
       if (rowIndex === 2) {
         return "highlight-row";
@@ -235,20 +280,18 @@ export default {
         }
       }
 
-      console.log(edit_records)
-
       if (edit_records.length > 0) {
         // Send the edit records to the backend
         axios.post('http://localhost:8000/api/edit-data', {
           edit_records: edit_records,
           name: "tony"
         })
-          .then(response => {
-            console.log('Edit records sent successfully', response);
-          })
-          .catch(error => {
-            console.error('Error sending edit records', error);
-          });
+            .then(response => {
+              console.log('Edit records sent successfully', response);
+            })
+            .catch(error => {
+              console.error('Error sending edit records', error);
+            });
       }
 
       // Clear the backup since changes are saved
@@ -259,6 +302,28 @@ export default {
       // Restore the original data from the backup
       Object.assign(row, this.backupRow);
       row.editing = false;
+    },
+    filterHandler(value, row) {
+      // Assuming you want to filter based on the satellite_name property
+      return row.un_registry_country === value;
+    },
+    toggleFilters() {
+      this.filtersActive = !this.filtersActive;
+      // Optionally, add logic here to apply or remove filters
+    },
+  },
+  computed: {
+    filteredData() {
+      // Filter based on selectedColumns and searchQuery
+      return this.tableData.filter(row => {
+        // Check if the satellite name contains the search query
+        const matchesSearch = row.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+        // Check if the row's columns are selected for display
+        const columnsSelected = this.selectedColumns.length === 0 || this.selectedColumns.some(col => row.hasOwnProperty(col));
+
+        return matchesSearch && columnsSelected;
+      });
     },
   },
 };
@@ -363,7 +428,36 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button+.el-button {
+.el-button + .el-button {
   margin-left: 0px;
+}
+
+.el-dropdown {
+  margin-left: auto;
+}
+
+.el-dropdown-menu {
+  padding: 10px;
+  /* Add some padding inside the dropdown */
+  max-height: 300px;
+  /* Set a max height */
+  overflow-y: auto;
+  /* Add scrollbar if content is too long */
+  width: auto;
+  /* Adjust width as needed */
+}
+
+/* Style for each checkbox in the dropdown */
+.el-checkbox {
+  display: block;
+  /* Make each checkbox take up a full line */
+  margin: 5px 0;
+  /* Add some margin for spacing */
+}
+
+/* Style for the checkbox label */
+.el-checkbox__label {
+  font-size: 14px;
+  /* Adjust font size as needed */
 }
 </style>
