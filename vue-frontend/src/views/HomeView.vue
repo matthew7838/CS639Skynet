@@ -4,12 +4,12 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                              height: 60px;
-                              color: white;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                            ">
+                                                height: 60px;
+                                                color: white;
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                              ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -46,23 +46,45 @@
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Home Page</el-breadcrumb-item>
           </el-breadcrumb>
+
+          <el-dropdown>
+            <el-button>
+              Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-checkbox-group v-model="selectedColumns">
+                <el-checkbox label="satellite_name">Satellite Name</el-checkbox>
+                <el-checkbox label="un_registry_country">UN Registry Country</el-checkbox>
+                <!-- Repeat for other columns -->
+              </el-checkbox-group>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+          <!-- Search input for satellite name -->
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          </el-input>
+
         </el-header>
 
         <!--        Main Page-->
         <el-main>
 
 
-          <el-table :data="tableData" style="width: 100%" :row-style="
+          <el-table :data="filteredData" style="width: 100%" :row-style="
             ({ row }) =>
               row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
           ">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
+            <el-table-column fixed prop="satellite_name" label="satellite_name"
+              v-if="selectedColumns.includes('satellite_name')">
+              <!-- copy v-if to filter column -->
+            </el-table-column>
             <el-table-column prop="un_registry_country" label="un_registry_country" :filters="[
               { text: 'Country11', value: 'Country11' },
               { text: 'Country12', value: 'Country12' },
               { text: 'Country13', value: 'Country13' },
-              { text: 'Country14', value: 'Country14' },
-            ]" :filter-method="filterHandler">
+              { text: 'Country14', value: 'Country14' },]" :filter-method="filterHandler" filter-placement="bottom-start"
+              v-if="selectedColumns.includes('un_registry_country')">
+              <!-- copy template to if want edit function -->
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
                 <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
@@ -73,7 +95,7 @@
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator_country" label="operator_country" >
+            <el-table-column prop="operator_country" label="operator_country">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
@@ -188,6 +210,10 @@ export default {
       tableData: [],
       editDialogVisible: false,
       backupRow: null,
+      filtersActive: false,
+      // TODO put all columns in selectedColumns  expect pk  
+      selectedColumns: ['satellite_name', 'un_registry_country', 'operator_country'],
+      searchQuery: '',
     };
   },
   mounted() {
@@ -243,8 +269,6 @@ export default {
         }
       }
 
-      console.log(edit_records)
-
       if (edit_records.length > 0) {
         // Send the edit records to the backend
         axios.post('http://localhost:8000/api/edit-data', {
@@ -271,6 +295,24 @@ export default {
     filterHandler(value, row) {
       // Assuming you want to filter based on the satellite_name property
       return row.un_registry_country === value;
+    },
+    toggleFilters() {
+      this.filtersActive = !this.filtersActive;
+      // Optionally, add logic here to apply or remove filters
+    },
+  },
+  computed: {
+    filteredData() {
+      // Filter based on selectedColumns and searchQuery
+      return this.tableData.filter(row => {
+        // Check if the satellite name contains the search query
+        const matchesSearch = row.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+        // Check if the row's columns are selected for display
+        const columnsSelected = this.selectedColumns.length === 0 || this.selectedColumns.some(col => row.hasOwnProperty(col));
+
+        return matchesSearch && columnsSelected;
+      });
     },
   },
 };
@@ -377,5 +419,34 @@ export default {
 
 .el-button+.el-button {
   margin-left: 0px;
+}
+
+.el-dropdown {
+  margin-left: auto;
+}
+
+.el-dropdown-menu {
+  padding: 10px;
+  /* Add some padding inside the dropdown */
+  max-height: 300px;
+  /* Set a max height */
+  overflow-y: auto;
+  /* Add scrollbar if content is too long */
+  width: auto;
+  /* Adjust width as needed */
+}
+
+/* Style for each checkbox in the dropdown */
+.el-checkbox {
+  display: block;
+  /* Make each checkbox take up a full line */
+  margin: 5px 0;
+  /* Add some margin for spacing */
+}
+
+/* Style for the checkbox label */
+.el-checkbox__label {
+  font-size: 14px;
+  /* Adjust font size as needed */
 }
 </style>
