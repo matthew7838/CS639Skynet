@@ -4,6 +4,7 @@ from myspider.spiders.reentrypredictor import ReentrypredictorSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from myspider.Gatherer import Gatherer
+from myspider.deletions import Deletions
 
 def main():
     spiders = [Planet4589spiderSpider, ReentrypredictorSpider, OrbitalfocusspiderSpider]
@@ -15,6 +16,8 @@ def main():
     process.start()
     gatherer = Gatherer()
     gatherer.gather()
+    deletion = Deletions()
+    deletion.MarkDeletions()
 
 if __name__ == '__main__':
     main()

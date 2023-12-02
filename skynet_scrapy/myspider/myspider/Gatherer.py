@@ -38,7 +38,7 @@ class Gatherer:
                          contractor_country text,
                          launch_site text,
                          launch_vehicle text,
-                         COSPAR text,
+                         COSPAR text PRIMARY KEY,
                          NORAD text,
                          source text,
                          additional_source text)""")
