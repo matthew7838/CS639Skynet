@@ -114,7 +114,8 @@ class ReentrypredictorPipeline:
                     value = parsed_date.strftime('%-m/%-d/%y')
                     adapter[field_name] = value
             self.cur.execute(
-                """ insert into aero (object, mission, reentry_type, launch_date, predicted_reentry_date, norad_num, cospar_num) values (%s, %s, %s, %s, %s, %s, %s)""",
+                """insert into aero (object, mission, reentry_type, launch_date, predicted_reentry_date, norad_num, 
+                cospar_num) values (%s, %s, %s, %s, %s, %s, %s)""",
                 (
                     item['object'],
                     item['mission'],
@@ -208,7 +209,12 @@ class Planet4589Pipeline:
                     value = parsed_date.strftime('%-m/%-d/%y')
                     adapter[field_name] = value
             self.cur.execute(
-                """ insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
+                ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, 
+                totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, 
+                af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s)""",
                 (
                     item['JCAT'],
                     item['Satcat'],

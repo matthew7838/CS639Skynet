@@ -1,8 +1,7 @@
 import psycopg2
 
 
-class Gatherer:
-
+class Deletions:
     def __init__(self):
         hostname = 'localhost'  # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
@@ -12,7 +11,7 @@ class Gatherer:
         self.cur = self.connection.cursor()
 
         self.cur.execute("""
-        CREATE TABLE IF NOT EXISTS UCS_table(
+        CREATE TABLE IF NOT EXISTS reentry_table(
                          full_name text,
                          official_name text,
                          country text,
@@ -45,33 +44,20 @@ class Gatherer:
         # extra line
         self.connection.commit()
 
-    def gather(self):
+    def MarkDeletions(self):
         sql_query = """
-            INSERT INTO UCS_table (full_name, official_name, owner_country, owner, orbit_class, in_geo, perigee, apogee, inclination, mass, dry_mass, launch_date, contractor, cospar, norad)
-            SELECT
-                plname,
-                name,
-                state,
-                owner,
-                oporbit,
-                CASE 
-                    WHEN oporbit LIKE '%GEO%' THEN 1 
-                    ELSE 0 
-                END,
-                perigee,
-                apogee,
-                inc,
-                mass,
-                drymass,
-                ldate,
-                manufacturer,
-                piece,
-                satcat           
-            FROM planet4589
+            INSERT INTO reentry_table
+            SELECT UCS_table.*
+            FROM (
+                SELECT o.designation AS COSPAR
+                FROM UCS_table u
+                JOIN orbitalfocus o ON u.NORAD = o.cat_no AND u.COSPAR = o.designation
+                UNION
+                SELECT a.cospar_num AS COSPAR
+                FROM UCS_table u
+                JOIN aero a ON u.NORAD = a.norad_num AND u.COSPAR = a.cospar_num
+            ) AS joined_tables
+            JOIN UCS_table ON joined_tables.COSPAR = UCS_table.COSPAR;
         """
         self.cur.execute(sql_query)
         self.connection.commit()
-
-
-
-
