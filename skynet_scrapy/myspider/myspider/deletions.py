@@ -11,26 +11,53 @@ class Deletions:
         self.cur = self.connection.cursor()
 
         self.cur.execute("""
-        CREATE TABLE IF NOT EXISTS deletion_table(
-            COSPAR text PRIMARY KEY
-        )""")
+        CREATE TABLE IF NOT EXISTS reentry_table(
+                         full_name text,
+                         official_name text,
+                         country text,
+                         owner_country text,
+                         owner text,
+                         users text,
+                         purpose text,
+                         detail_purpose text,
+                         orbit_class text,
+                         orbit_type text,
+                         in_GEO INT,
+                         perigee integer,
+                         apogee integer,
+                         eccentricity TEXT,
+                         inclination double precision,
+                         period text,
+                         mass double precision,
+                         dry_mass double precision,
+                         power text,
+                         launch_date date,
+                         expected_lifetime TEXT,
+                         contractor text,
+                         contractor_country text,
+                         launch_site text,
+                         launch_vehicle text,
+                         COSPAR text PRIMARY KEY,
+                         NORAD integer,
+                         source text,
+                         additional_source text)""")
         # extra line
         self.connection.commit()
 
     def MarkDeletions(self):
         sql_query = """
-            INSERT INTO deletion_table (COSPAR)
-            (
-                SELECT u.COSPAR
+            INSERT INTO reentry_table
+            SELECT UCS_table.*
+            FROM (
+                SELECT o.designation AS COSPAR
                 FROM UCS_table u
                 JOIN orbitalfocus o ON u.NORAD = o.cat_no AND u.COSPAR = o.designation
-            )
-            UNION
-            (
-                SELECT u.COSPAR
+                UNION
+                SELECT a.cospar_num AS COSPAR
                 FROM UCS_table u
                 JOIN aero a ON u.NORAD = a.norad_num AND u.COSPAR = a.cospar_num
-            );
+            ) AS joined_tables
+            JOIN UCS_table ON joined_tables.COSPAR = UCS_table.COSPAR;
         """
         self.cur.execute(sql_query)
         self.connection.commit()
