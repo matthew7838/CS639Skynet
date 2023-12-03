@@ -10,23 +10,26 @@ import pandas as pd
 from datetime import datetime
 import psycopg2
 
+
 class OrbitalfocusPipeline:
 
     def __init__(self):
-        hostname = 'localhost' # this will be universal
+        hostname = 'localhost'  # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
+        password = 'skynet'  # make the password 'skynet' when you create the new user
+        # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
 
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
-                         cat_no text,
+                         cat_no integer,
                          designation text,
                          name text,
-                         date text)""")
-    
+                         date date)""")
+        # extra line
+        #self.connection.commit()
+
     def close_spider(self, spider):
         try:
             self.connection.commit()
@@ -54,25 +57,27 @@ class OrbitalfocusPipeline:
                     parsed_date = datetime.strptime(value, '%Y %b %d')
                     value = parsed_date.strftime('%-m/%-d/%y')
                     adapter[field_name] = value
-            self.cur.execute(""" insert into orbitalfocus (cat_no, designation, name, date) values (%s, %s, %s, %s)""", (
-                    item['cat_no'], #norad num
-                    item['designation'], # cospar num
-                    item['name'],
-                    item['date'],
-            ))
+            self.cur.execute(""" insert into orbitalfocus (cat_no, designation, name, date) values (%s, %s, %s, %s)""",
+                             (
+                                 item['cat_no'],  # norad num
+                                 item['designation'],  # cospar num
+                                 item['name'],
+                                 item['date'],
+                             ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
-            #print(f'Error during item processing: {e}')
+            # print(f'Error during item processing: {e}')
         return item
+
 
 class ReentrypredictorPipeline:
     # this class is for https://aerospace.org/reentries
     def __init__(self):
-        hostname = 'localhost' # this will be universal
+        hostname = 'localhost'  # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
+        password = 'skynet'  # make the password 'skynet' when you create the new user
+        # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
@@ -81,11 +86,13 @@ class ReentrypredictorPipeline:
                          object text,
                          mission text,
                          reentry_type text,
-                         launch_date text,
-                         predicted_reentry_date text,
-                         norad_num text,
+                         launch_date date,
+                         predicted_reentry_date date,
+                         norad_num integer,
                          cospar_num text)""")
-        
+        # extra line
+        #self.connection.commit()
+
     def close_spider(self, spider):
         try:
             self.connection.commit()
@@ -106,7 +113,10 @@ class ReentrypredictorPipeline:
                     parsed_date = datetime.strptime(value, '%b %d, %Y %H:%M:%S')
                     value = parsed_date.strftime('%-m/%-d/%y')
                     adapter[field_name] = value
-            self.cur.execute(""" insert into aero (object, mission, reentry_type, launch_date, predicted_reentry_date, norad_num, cospar_num) values (%s, %s, %s, %s, %s, %s, %s)""", (
+            self.cur.execute(
+                """insert into aero (object, mission, reentry_type, launch_date, predicted_reentry_date, norad_num, 
+                cospar_num) values (%s, %s, %s, %s, %s, %s, %s)""",
+                (
                     item['object'],
                     item['mission'],
                     item['reentry_type'],
@@ -114,19 +124,20 @@ class ReentrypredictorPipeline:
                     item['predicted_reentry_date'],
                     item['norad_num'],
                     item['cospar_num'],
-            ))
+                ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
-            #print(f'Error during item processing: {e}')
+            # print(f'Error during item processing: {e}')
         return item
+
 
 class Planet4589Pipeline:
     def __init__(self):
-        hostname = 'localhost' # this will be universal
+        hostname = 'localhost'  # this will be universal
         username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet' # make the password 'skynet' when you create the new user
-        #database = 'skynet' # we don't need this for this to work
+        password = 'skynet'  # make the password 'skynet' when you create the new user
+        # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
@@ -134,14 +145,14 @@ class Planet4589Pipeline:
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
                          jcat text,
-                         satcat text,
+                         satcat integer,
                          piece text,
                          type text,
                          name text,
                          plname text,
-                         ldate text,
+                         ldate date,
                          parent text,
-                         sdate text,
+                         sdate text, 
                          primry text,
                          ddate text,
                          status text,
@@ -151,31 +162,31 @@ class Planet4589Pipeline:
                          manufacturer text,
                          bus text,
                          motor text,
-                         mass text,
+                         mass double precision,
                          massflag text,
-                         drymass text,
+                         drymass double precision,
                          dryflag text,
-                         totmass text,
+                         totmass double precision,
                          totflag text,
-                         length text,
+                         length double precision,
                          lflag text,
-                         diameter text,
+                         diameter double precision,
                          dflag text,
-                         span text,
+                         span double precision,
                          spanflag text,
                          shape text,
-                         odate text,
-                         perigee text,
+                         odate date,
+                         perigee integer,
                          pf text,
-                         apogee text,
+                         apogee integer,
                          af text,
-                         inc text,
+                         inc double precision,
                          if text,
                          oporbit text,
                          oqual text,
-                         altnames text)""")
-
-
+                         altnames text)""") # check sdate, odate type
+        # extra line
+        #self.connection.commit()
 
     def close_spider(self, spider):
         try:
@@ -186,7 +197,7 @@ class Planet4589Pipeline:
         finally:
             self.cur.close()
             self.connection.close()
-    
+
     def process_item(self, item, spider):
         try:
             adapter = ItemAdapter(item)
@@ -197,53 +208,58 @@ class Planet4589Pipeline:
                     parsed_date = datetime.strptime(value, '%Y %b %d')
                     value = parsed_date.strftime('%-m/%-d/%y')
                     adapter[field_name] = value
-            self.cur.execute(""" insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (
-                item['JCAT'],
-                item['Satcat'],
-                item['Piece'],
-                item['Type'],
-                item['Name'],
-                item['PLName'],
-                item['LDate'],
-                item['Parent'],
-                item['SDate'],
-                item['Primary'],
-                item['DDate'],
-                item['Status'],
-                item['Dest'],
-                item['Owner'],
-                item['State'],
-                item['Manufacturer'],
-                item['Bus'],
-                item['Motor'],
-                item['Mass'],
-                item['MassFlag'],
-                item['DryMass'],
-                item['DryFlag'],
-                item['TotMass'],
-                item['TotFlag'],
-                item['Length'],
-                item['LFlag'],
-                item['Diameter'],
-                item['DFlag'],
-                item['Span'],
-                item['SpanFlag'],
-                item['Shape'],
-                item['ODate'],
-                item['Perigee'],
-                item['PF'],
-                item['Apogee'],
-                item['AF'],
-                item['Inc'],
-                item['IF'],
-                item['OpOrbit'],
-                item['OQUAL'],
-                item['AltNames']
-            ))
+            self.cur.execute(
+                """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
+                ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, 
+                totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, 
+                af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s)""",
+                (
+                    item['JCAT'],
+                    item['Satcat'],
+                    item['Piece'],
+                    item['Type'],
+                    item['Name'],
+                    item['PLName'],
+                    item['LDate'],
+                    item['Parent'],
+                    item['SDate'],
+                    item['Primary'],
+                    item['DDate'],
+                    item['Status'],
+                    item['Dest'],
+                    item['Owner'],
+                    item['State'],
+                    item['Manufacturer'],
+                    item['Bus'],
+                    item['Motor'],
+                    item['Mass'],
+                    item['MassFlag'],
+                    item['DryMass'],
+                    item['DryFlag'],
+                    item['TotMass'],
+                    item['TotFlag'],
+                    item['Length'],
+                    item['LFlag'],
+                    item['Diameter'],
+                    item['DFlag'],
+                    item['Span'],
+                    item['SpanFlag'],
+                    item['Shape'],
+                    item['ODate'],
+                    item['Perigee'],
+                    item['PF'],
+                    item['Apogee'],
+                    item['AF'],
+                    item['Inc'],
+                    item['IF'],
+                    item['OpOrbit'],
+                    item['OQUAL'],
+                    item['AltNames']
+                ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
             # print(f'Error during item processing: {e}')
         return item
-
-
