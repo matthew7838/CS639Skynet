@@ -23,10 +23,10 @@ class OrbitalfocusPipeline:
 
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
-                         cat_no text,
+                         cat_no integer,
                          designation text,
                          name text,
-                         date text)""")
+                         date date)""")
         # extra line
         #self.connection.commit()
 
@@ -86,9 +86,9 @@ class ReentrypredictorPipeline:
                          object text,
                          mission text,
                          reentry_type text,
-                         launch_date text,
-                         predicted_reentry_date text,
-                         norad_num text,
+                         launch_date date,
+                         predicted_reentry_date date,
+                         norad_num integer,
                          cospar_num text)""")
         # extra line
         #self.connection.commit()
@@ -145,14 +145,14 @@ class Planet4589Pipeline:
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
                          jcat text,
-                         satcat text,
+                         satcat integer,
                          piece text,
                          type text,
                          name text,
                          plname text,
-                         ldate text,
+                         ldate date,
                          parent text,
-                         sdate text,
+                         sdate text, 
                          primry text,
                          ddate text,
                          status text,
@@ -162,29 +162,29 @@ class Planet4589Pipeline:
                          manufacturer text,
                          bus text,
                          motor text,
-                         mass text,
+                         mass double precision,
                          massflag text,
-                         drymass text,
+                         drymass double precision,
                          dryflag text,
-                         totmass text,
+                         totmass double precision,
                          totflag text,
-                         length text,
+                         length double precision,
                          lflag text,
-                         diameter text,
+                         diameter double precision,
                          dflag text,
-                         span text,
+                         span double precision,
                          spanflag text,
                          shape text,
-                         odate text,
-                         perigee text,
+                         odate date,
+                         perigee integer,
                          pf text,
-                         apogee text,
+                         apogee integer,
                          af text,
-                         inc text,
+                         inc double precision,
                          if text,
                          oporbit text,
                          oqual text,
-                         altnames text)""")
+                         altnames text)""") # check sdate, odate type
         # extra line
         #self.connection.commit()
 
