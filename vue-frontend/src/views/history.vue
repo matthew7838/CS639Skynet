@@ -3,12 +3,12 @@
         <!--    SideBar  -->
         <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
             <div style="
-                    height: 60px;
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                ">
+                                    height: 60px;
+                                    color: white;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                ">
                 <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
             </div>
 
@@ -31,6 +31,10 @@
                     <i class="el-icon-time"></i>
                     <span slot="title">History</span>
                 </el-menu-item>
+                <el-menu-item @click="logout">
+                    <i class="el-icon-switch-button"></i>
+                    <span slot="title">Logout</span>
+                </el-menu-item>
             </el-menu>
         </el-aside>
 
@@ -38,6 +42,11 @@
             <!--    Main Page-->
             <!--        Header-->
             <el-header>
+
+                <el-breadcrumb style="margin-left: 20px">
+                    <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
+                </el-breadcrumb>
+
                 <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
                 <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
                     <el-breadcrumb-item :to="{ path: '/' }">History Page</el-breadcrumb-item>
@@ -60,7 +69,7 @@
                 </el-table>
             </el-main>
             <!-- Add a modal dialog for showing JCAT details -->
-            <el-dialog :visible.sync="showJCATModal" title="JCAT Details">
+            <el-dialog :visible.sync="showJCATModal" title="Satellite Details">
                 <el-table :data="jcatDetails" style="width: 100%">
                     <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
                     <el-table-column prop="un_registry_country" label="un_registry_country"></el-table-column>
@@ -92,6 +101,7 @@
                     <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
                     <el-table-column prop="source1" label="source1" width="150"></el-table-column>
                     <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
+                    <el-table-column fixed="right" prop="removal_reason" label="Removal Reason" width="200"></el-table-column>
                 </el-table>
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="showJCATModal = false">Close</el-button>
@@ -113,10 +123,12 @@ export default {
             showJCATModal: false,
             jcatDetails: [],
             searchQuery: '',
+            username: '',
         };
     },
     mounted() {
         this.fetchHistory();
+        this.getUsername();
     },
     computed: {
         // Add a computed property for filtering data
@@ -130,6 +142,15 @@ export default {
         },
     },
     methods: {
+        logout() {
+            localStorage.removeItem('authToken'); // 清除本地存储中的 token
+            this.$router.push('/login'); // 重定向到登录页面
+        },
+        getUsername() {
+            // Retrieve the username from local storage
+            this.username = localStorage.getItem('username');
+            console.log("Retrieved username:", this.username);
+        },
         async fetchHistory() {
             try {
                 const response = await axios.get(

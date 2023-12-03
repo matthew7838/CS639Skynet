@@ -92,6 +92,22 @@ class SatelliteEditRecord(db.Model):
             'edited_by': self.edited_by,
             'edit_time': self.edit_time.strftime('%Y-%m-%d %H:%M:%S') if self.edit_time else None
         }
+    
+class SatelliteRemovalRecord(db.Model):
+
+    __tablename__ = 'satellite_removal_records'
+
+    id = db.Column(db.Integer, primary_key=True)
+    cospar = db.Column(db.String(100), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cospar": self.cospar,
+            "reason": self.reason,
+        }
+
 
 
 class RecordTable(db.Model):

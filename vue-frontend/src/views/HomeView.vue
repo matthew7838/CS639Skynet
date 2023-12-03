@@ -4,18 +4,18 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                              height: 60px;
-                              color: white;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                            ">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
+                                height: 60px;
+                                color: white;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                              ">
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-                 :default-active="$route.path">
+          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+          :default-active="$route.path">
           <el-menu-item index="/">
             <i class="el-icon-house"></i>
             <span slot="title">Home Page</span>
@@ -43,13 +43,23 @@
         <!--        Header-->
         <el-header>
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
-          <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
-            <el-breadcrumb-item :to="{ path: '/' }">Home Page</el-breadcrumb-item>
+          <el-breadcrumb style="margin-left: 20px">
+            <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
           </el-breadcrumb>
 
+          <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
+            <el-breadcrumb-item>Home Page</el-breadcrumb-item>
+          </el-breadcrumb>
+
+
+
           <!-- Search input for satellite name -->
-          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name"
+            style="width: 300px; margin-left: 20px; margin-right: 20px;">
           </el-input>
+
+          Remove: <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px;" />
+
           <el-dropdown>
             <el-button>
               Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
@@ -90,7 +100,7 @@
                 <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
                 <!-- If the row is in editing mode, show the input with tooltip -->
                 <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country"
-                            placement="top-start">
+                  placement="top-start">
                   <el-input v-model="scope.row.un_registry_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -99,8 +109,7 @@
               v-if="selectedColumns.includes('operator_country')">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country"
-                            placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
                   <el-input v-model="scope.row.operator_country" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -132,8 +141,7 @@
             <el-table-column prop="detailed_purpose" label="detailed_purpose">
               <template slot-scope="scope">
                 <div v-if="!scope.row.editing">{{ scope.row.detailed_purpose }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose"
-                            placement="top-start">
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose" placement="top-start">
                   <el-input v-model="scope.row.detailed_purpose" size="mini"></el-input>
                 </el-tooltip>
               </template>
@@ -184,21 +192,42 @@
             <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
             <el-table-column prop="source1" label="source1" width="150"></el-table-column>
             <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
-            <el-table-column fixed="right" label="Operations">
+            <el-table-column fixed="right" label="Edit">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
-                           @click="startEdit(scope.row)">Edit
+                  @click="startEdit(scope.row)">Edit
+                </el-button>
+                <el-button v-if="scope.row.editing" size="mini" class="operation-button" @click="saveEdit(scope.row)">Save
                 </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                           @click="saveEdit(scope.row)">Save
+                  @click="cancelEdit(scope.row)">Cancel
                 </el-button>
-                <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                           @click="cancelEdit(scope.row)">Cancel
-                </el-button>
+              </template>
+            </el-table-column>
+            <!-- New Remove Column -->
+            <el-table-column fixed="right" label="Remove" width="100" v-if="showRemoveColumn">
+              <template slot-scope="scope">
+                <el-button type="danger" size="mini" @click="handleRemoveRow(scope.row)">Remove</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-main>
+
+        <el-dialog title="Select a Reason for Removal" :visible.sync="isRemoveModalVisible" width="30%">
+          <el-radio-group v-model="selectedOption">
+            <el-radio label="Re-entered">Re-entered</el-radio>
+            <el-radio label="Non-operational">Non-operational</el-radio>
+            <el-radio label="Others">Others</el-radio>
+          </el-radio-group>
+
+          <el-input v-if="selectedOption === 'Others'" v-model="otherReason"
+            placeholder="Please specify the reason"></el-input>
+
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="isRemoveModalVisible = false">Cancel</el-button>
+            <el-button type="primary" @click="confirmRemoval">Confirm</el-button>
+          </span>
+        </el-dialog>
 
       </el-container>
     </el-container>
@@ -221,20 +250,67 @@ export default {
       // TODO put all columns in selectedColumns  expect pk  
       selectedColumns: ['un_registry_country', 'operator_country', 'operator'],
       searchQuery: '',
+      username: '',
+      showRemoveColumn: false,
+      isRemoveModalVisible: false,
+      selectedOption: '',
+      otherReason: '',
     };
   },
   mounted() {
     this.fetchSatellites();
+    this.getUsername();
   },
   methods: {
+    handleRemoveRow(row) {
+      this.currentRow = row; // Store the current row for further processing
+      this.isRemoveModalVisible = true; // Show the modal
+    },
+    confirmRemoval() {
+      // Construct the payload to be sent
+      const payload = {
+        cospar: this.currentRow.cospar, // Assuming 'satellite_name' is the identifier
+        reason: this.selectedOption === 'Others' ? this.otherReason : this.selectedOption,
+      };
+
+      console.log(payload)
+
+          
+      // Send an AJAX request
+      axios.post('http://localhost:8000/api/remove-sat', payload)
+        .then(response => {
+          // Handle success response
+          console.log('Data sent successfully:', response);
+
+          // Remove the row from the local data, if needed
+          const index = this.tableData.indexOf(this.currentRow);
+          if (index > -1) {
+            this.tableData.splice(index, 1);
+          }
+        })
+        .catch(error => {
+          // Handle error response
+          console.error('Error sending data:', error);
+        });
+
+      // Reset modal state and hide it
+      this.isRemoveModalVisible = false;
+      this.selectedOption = '';
+      this.otherReason = '';
+    },
     logout() {
       localStorage.removeItem('authToken'); // 清除本地存储中的 token
       this.$router.push('/login'); // 重定向到登录页面
     },
+    getUsername() {
+      // Retrieve the username from local storage
+      this.username = localStorage.getItem('username');
+      console.log("Retrieved username:", this.username);
+    },
     async fetchSatellites() {
       try {
         const response = await axios.get(
-            "http://localhost:8000/api/satellites"
+          "http://localhost:8000/api/satellites"
         ); // replace with your Flask app URL
         this.tableData = response.data.map((row) => ({
           ...row,
@@ -249,7 +325,7 @@ export default {
       this.tableData.splice(index, 1); // Remove the row
       // You may also want to delete the row from your backend/database
     },
-    tableRowClassName({row, rowIndex}) {
+    tableRowClassName({ row, rowIndex }) {
       // Here, you can specify a condition to highlight rows that need attention
       if (rowIndex === 2) {
         return "highlight-row";
@@ -284,14 +360,14 @@ export default {
         // Send the edit records to the backend
         axios.post('http://localhost:8000/api/edit-data', {
           edit_records: edit_records,
-          name: "tony"
+          name: this.username
         })
-            .then(response => {
-              console.log('Edit records sent successfully', response);
-            })
-            .catch(error => {
-              console.error('Error sending edit records', error);
-            });
+          .then(response => {
+            console.log('Edit records sent successfully', response);
+          })
+          .catch(error => {
+            console.error('Error sending edit records', error);
+          });
       }
 
       // Clear the backup since changes are saved
@@ -428,7 +504,7 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button + .el-button {
+.el-button+.el-button {
   margin-left: 0px;
 }
 
@@ -459,5 +535,17 @@ export default {
 .el-checkbox__label {
   font-size: 14px;
   /* Adjust font size as needed */
+}
+
+.el-table .cell {
+  text-overflow: clip;
+}
+
+.el-radio-group {
+  margin-bottom: 20px;
+}
+
+.el-button--small{
+  margin: 5px;
 }
 </style>

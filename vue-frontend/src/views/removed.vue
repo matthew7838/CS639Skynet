@@ -4,12 +4,12 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                                                      height: 60px;
-                                                      color: white;
-                                                      display: flex;
-                                                      align-items: center;
-                                                      justify-content: center;
-                                                    ">
+                          height: 60px;
+                          color: white;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -32,12 +32,21 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
+          <el-menu-item @click="logout">
+            <i class="el-icon-switch-button"></i>
+            <span slot="title">Logout</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
       <el-container>
         <!--        Header-->
         <el-header>
+
+          <el-breadcrumb style="margin-left: 20px">
+            <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
+          </el-breadcrumb>
+          
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Remove Page</el-breadcrumb-item>
@@ -81,6 +90,7 @@
             <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
             <el-table-column prop="source1" label="source1" width="150"></el-table-column>
             <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
+            <el-table-column fixed="right" prop="removal_reason" label="Reason" width="200"></el-table-column>
             <el-table-column fixed="right" label="Operations" width="120">
               <template slot-scope="scope">
                 <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeRow(scope.$index, scope.row)">
@@ -123,6 +133,7 @@
             <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
             <el-table-column prop="source1" label="source1" width="150"></el-table-column>
             <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
+            <el-table-column fixed="right" prop="removal_reason" label="Removal Reason" width="200"></el-table-column>
             <el-table-column fixed="right" label="Operations" width="120">
               <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-refresh" size="mini" @click="undoRemove(scope.$index, scope.row)">
@@ -135,8 +146,6 @@
         </el-main>
 
         <div style="display: flex; justify-content: center; align-items: center; margin-top: 30px; padding: 20px;">
-          <el-input placeholder="Enter your name" v-model="publisherName"
-            style="width: 200px; margin-right: 10px;"></el-input>
           <el-button type="success" @click="publishChanges">Publish Changes</el-button>
         </div>
       </el-container>
@@ -155,12 +164,13 @@ export default {
       collapseIcon: "el-icon-s-fold",
       tableData: [],
       removedItems: [],
-      publisherName: '',
       searchQuery: '',
+      username: '',
     };
   },
   mounted() {
     this.fetchSatellites();
+    this.getUsername();
   },
   computed: {
     // Add a computed property for filtering data
@@ -174,6 +184,15 @@ export default {
     },
   },
   methods: {
+    logout() {
+      localStorage.removeItem('authToken'); // 清除本地存储中的 token
+      this.$router.push('/login'); // 重定向到登录页面
+    },
+    getUsername() {
+      // Retrieve the username from local storage
+      this.username = localStorage.getItem('username');
+      console.log("Retrieved username:", this.username);
+    },
     async fetchSatellites() {
       try {
         const response = await axios.get(
@@ -204,10 +223,6 @@ export default {
       return '';
     },
     publishChanges() {
-      if (this.publisherName.trim() === '') {
-        this.$message.error('Please enter your name before publishing.');
-        return;
-      }
 
       // Update data_status for all removed items
       let updatedItems = this.removedItems.map(item => {
@@ -220,7 +235,7 @@ export default {
       // Send the updated items and publisher name to the backend for database update
       axios.post('http://localhost:8000/api/update-status', {
         updatedItems: updatedItems,
-        name: this.publisherName  // Include the publisherName in the request payload
+        name: this.username  // Include the username in the request payload
       })
         .then(response => {
           console.log(response.data);
@@ -236,9 +251,6 @@ export default {
           this.$message.error('Failed to publish changes.');
         });
 
-      console.log('Publishing changes by:', this.publisherName);
-      // Reset the publisher name
-      this.publisherName = '';
     },
   },
 };

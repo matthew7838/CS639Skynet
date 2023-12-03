@@ -32,12 +32,21 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
+          <el-menu-item @click="logout">
+            <i class="el-icon-switch-button"></i>
+            <span slot="title">Logout</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
       <el-container>
         <!--        Header-->
         <el-header>
+
+          <el-breadcrumb style="margin-left: 20px">
+            <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
+          </el-breadcrumb>
+          
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Edit Page</el-breadcrumb-item>
@@ -75,10 +84,12 @@ export default {
       asideWidth: "200px",
       tableData: [],
       searchQuery: '',
+      username: '',
     };
   },
   mounted() {
     this.fetchEditRecords();
+    this.getUsername();
   },
   computed: {
     // Add a computed property for filtering data
@@ -92,6 +103,15 @@ export default {
     },
   },
   methods: {
+    logout() {
+      localStorage.removeItem('authToken'); // 清除本地存储中的 token
+      this.$router.push('/login'); // 重定向到登录页面
+    },
+    getUsername() {
+      // Retrieve the username from local storage
+      this.username = localStorage.getItem('username');
+      console.log("Retrieved username:", this.username);
+    },
     async fetchEditRecords() {
       try {
         const response = await axios.get(

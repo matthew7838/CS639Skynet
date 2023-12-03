@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite, SatelliteEditRecord, RecordTable, User
+from models import db, Satellite, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord
 from functools import wraps
 import os
 import traceback
@@ -52,14 +52,22 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
-        # Generate token. Here, you need a secret key for JWT
+        # Debugging: Check values
+        print("Debug - Username: ", user.username)
+        print("Debug - Login Date: ", datetime.now().date().isoformat())
+        print("Debug - Secret Key: ", app.config['SECRET_KEY'])
+
+        # Generate token
         token = jwt.encode({
             'username': user.username,
             'login_date': datetime.now().date().isoformat(),
             'exp': datetime.utcnow() + timedelta(hours=1)
         }, app.config['SECRET_KEY'], algorithm='HS256')
 
-        return jsonify({'token': token}), 200
+        # Debugging: Check token
+        print("Debug - Generated Token: ", token)
+
+        return jsonify({'token': token, 'username': user.username}), 200
 
     return jsonify({'error': 'Invalid username or password'}), 401
 
@@ -68,16 +76,22 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.headers.get('Authorization')
+        # Debugging: Check received token
+        print("Debug - Received Token: ", token)
+
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            # Debugging: Check decoded data
+            print("Debug - Decoded Data: ", data)
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(*args, **kwargs)
     return decorated
+
 
 @app.route('/some-protected-route')
 @token_required
@@ -101,19 +115,32 @@ def get_satellites():
         return jsonify({"error": str(e)}), 500
 
 
+
 @app.route('/api/removed', methods=['GET'])
 def get_removed_satellites():
     try:
         # Query the skynet_satellites table for removed satellites (data_status = 1)
-        results = Satellite.query.filter(Satellite.data_status == 1).all()
+        results = db.session.query(
+            Satellite, 
+            SatelliteRemovalRecord.reason
+        ).join(
+            SatelliteRemovalRecord, 
+            Satellite.cospar == SatelliteRemovalRecord.cospar
+        ).filter(Satellite.data_status == 2).all()
 
         # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results]  # Assuming you have a to_dict() method in your model
+        data = [
+            {
+                **row.Satellite.to_dict(), 
+                "removal_reason": row.reason
+            } for row in results
+        ]
 
         return jsonify(data)
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/api/update-status', methods=['POST'])
@@ -128,7 +155,7 @@ def update_status():
             # Update the SkynetSatellite table
             satellite = Satellite.query.filter_by(satellite_name=satellite_name).first()
             if satellite:
-                satellite.data_status = 2
+                satellite.data_status = 4
                 db.session.add(satellite)
 
                 # Debug print
@@ -172,13 +199,28 @@ def get_history_records():
 def get_jcat_details():
     try:
         satellite_name = request.args.get('satellite_name')
-        satellites = Satellite.query.filter_by(satellite_name=satellite_name).all()
+
+        # Perform a join with the SatelliteRemovalRecord table
+        results = db.session.query(
+            Satellite, 
+            SatelliteRemovalRecord.reason
+        ).outerjoin(
+            SatelliteRemovalRecord, 
+            Satellite.cospar == SatelliteRemovalRecord.cospar
+        ).filter(Satellite.satellite_name == satellite_name).all()
+
+        # Serialize the results
         satellites_details = []
-        satellites_details.extend([satellite.to_dict() for satellite in satellites])
+        for satellite, reason in results:
+            satellite_dict = satellite.to_dict()
+            satellite_dict['removal_reason'] = reason
+            satellites_details.append(satellite_dict)
+
         return jsonify(satellites_details)
     except Exception as e:
         app.logger.error('Error in get_jcat_details: ' + str(e))
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/api/edit-data', methods=['POST'])
@@ -240,6 +282,35 @@ def get_edit_records():
         app.logger.error('Error in get_edit_records: ' + str(e))
         app.logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/remove-sat', methods=['POST'])
+def remove_sat():
+    data = request.get_json()
+    cospar_id = data.get('cospar')
+    reason = data.get('reason')
+
+    try:
+        # Find the satellite using the cospar ID
+        satellite = Satellite.query.filter_by(cospar=cospar_id).first()
+        if not satellite:
+            return jsonify({'error': 'Satellite not found'}), 404
+
+        # Update the satellite status to indicate it has been removed
+        satellite.data_status = 2
+        db.session.add(satellite)
+
+        # Create a new removal record
+        new_removal_record = SatelliteRemovalRecord(cospar=cospar_id, reason=reason)
+        db.session.add(new_removal_record)
+
+        db.session.commit()
+        return jsonify({'message': 'Satellite removed successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Exception occurred: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == "__main__":

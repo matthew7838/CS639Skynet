@@ -91,8 +91,11 @@ export default {
     login() {
       axios.post('http://localhost:8000/api/login', this.user, {headers: {'Content-Type': 'application/json'}})
           .then(response => {
+            console.log("Login response:", response.data);
             // Handle the token as per your requirement
             localStorage.setItem('authToken', response.data.token);
+            localStorage.setItem('username', response.data.username);
+            this.username = response.data.username; // Also set the username in the component's data
             this.$router.push('/'); // Redirect to homepage or dashboard
           })
           .catch(error => {
