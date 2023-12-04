@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord
+from models import db, Satellite, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord
 from functools import wraps
 import os
 import traceback
@@ -104,6 +104,38 @@ def get_satellites():
     try:
         # Query the skynet_satellites table
         results = Satellite.query.filter(Satellite.data_status != 2).all()
+
+        # Serialize the results into a list of dictionaries
+        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
+
+        return jsonify(data)
+    except Exception as e:
+        # Log the exception for debugging purposes
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
+
+#NEW_LAUNCHES
+@app.route('/api/satellites_new', methods=['GET'])
+def get_satellites_new():
+    try:
+        # Query the skynet_satellites table
+        results = Satellite_New.query.filter().all()
+
+        # Serialize the results into a list of dictionaries
+        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
+
+        return jsonify(data)
+    except Exception as e:
+        # Log the exception for debugging purposes
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
+    
+#master_dataset
+@app.route('/api/satellites_master', methods=['GET'])
+def get_satellites_master():
+    try:
+        # Query the skynet_satellites table
+        results = Satellite_Master.query.filter().all()
 
         # Serialize the results into a list of dictionaries
         data = [row.to_dict() for row in results]  # Make sure this method exists in your model
