@@ -117,3 +117,5 @@ myenv
 test.csv
 /vue-frontend/node_modules/
 /vue-frontend/src/assets/desktop.ini
+
+/flask_backend/CSVs
