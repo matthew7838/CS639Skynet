@@ -3,12 +3,12 @@
         <!--    SideBar  -->
         <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
             <div style="
-                                    height: 60px;
-                                    color: white;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                ">
+                                        height: 60px;
+                                        color: white;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    ">
                 <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
             </div>
 
@@ -31,10 +31,15 @@
                     <i class="el-icon-time"></i>
                     <span slot="title">History</span>
                 </el-menu-item>
+                <el-menu-item index="/crawler">
+                    <i class="el-icon-search"></i>
+                    <span slot="title">Crawler</span>
+                </el-menu-item>
                 <el-menu-item @click="logout">
                     <i class="el-icon-switch-button"></i>
                     <span slot="title">Logout</span>
                 </el-menu-item>
+
             </el-menu>
         </el-aside>
 
@@ -101,7 +106,8 @@
                     <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
                     <el-table-column prop="source1" label="source1" width="150"></el-table-column>
                     <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
-                    <el-table-column fixed="right" prop="removal_reason" label="Removal Reason" width="200"></el-table-column>
+                    <el-table-column fixed="right" prop="removal_reason" label="Removal Reason"
+                        width="200"></el-table-column>
                 </el-table>
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="showJCATModal = false">Close</el-button>

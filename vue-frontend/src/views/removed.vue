@@ -4,12 +4,12 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                          height: 60px;
-                          color: white;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                        ">
+                            height: 60px;
+                            color: white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                          ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
@@ -32,10 +32,15 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
+          <el-menu-item index="/crawler">
+            <i class="el-icon-search"></i>
+            <span slot="title">Crawler</span>
+          </el-menu-item>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
           </el-menu-item>
+
         </el-menu>
       </el-aside>
 
@@ -46,7 +51,7 @@
           <el-breadcrumb style="margin-left: 20px">
             <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
           </el-breadcrumb>
-          
+
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Remove Page</el-breadcrumb-item>
@@ -176,7 +181,7 @@ export default {
     // Add a computed property for filtering data
     filteredData() {
       if (this.searchQuery) {
-        return this.tableData.filter(item => 
+        return this.tableData.filter(item =>
           item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }

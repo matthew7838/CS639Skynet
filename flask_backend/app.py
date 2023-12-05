@@ -1,13 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord
+from models import db, Satellite, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord, ScrapeRecord
 from functools import wraps
 import os
 import traceback
 import jwt
 from sqlalchemy import func
 from datetime import datetime, timedelta
+import subprocess
+
 
 load_dotenv()
 
@@ -261,6 +263,7 @@ def edit_data():
 @app.route('/api/get-edit-records', methods=['GET'])
 def get_edit_records():
     try:
+        
         # Log at the start
         app.logger.info('get_edit_records function called')
 
@@ -309,6 +312,64 @@ def remove_sat():
     except Exception as e:
         db.session.rollback()
         print(f"Exception occurred: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/run-scraper', methods=['POST'])
+def run_scraper():
+    try:
+        data = request.get_json()
+        username = data['name']
+        # Existing code
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Adjusting to get the desired path
+        desired_path = os.path.dirname(os.path.dirname(base_dir))
+
+        script_path = os.path.join(desired_path, 'CS639Skynet', 'skynet_scrapy', 'myspider', 'skynet.py')
+        print(script_path)
+
+        # Run the command
+        subprocess.run(['python', script_path], check=True)
+        scraper_completion(username)
+        return jsonify({"message": "Scraper started successfully"}), 200
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running the scraper: {e}")
+        return jsonify({'error': 'Failed to run scraper'}), 500
+    except Exception as e:
+        print(f"General Exception occurred: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/scraper-completion', methods=['POST'])
+def scraper_completion(username):
+    try:
+
+        # Create a new ScrapeRecord instance
+        new_record = ScrapeRecord(username=username)
+        db.session.add(new_record)
+        db.session.commit()
+
+        return jsonify({'message': 'New scrape record added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Exception occurred: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/scrape-records', methods=['GET'])
+def get_scrape_records():
+    try:
+        print("Fetching scrape records...")
+        records = ScrapeRecord.query.all()
+
+        print(f"Records fetched: {records}")
+
+        # Convert the records to a list of dictionaries
+        data = [record.to_dict() for record in records]
+
+        print(f"Data to return: {data}")
+
+        return jsonify(data), 200
+    except Exception as e:
+        print(f"Error fetching scrape records: {e}")
         return jsonify({'error': str(e)}), 500
 
 

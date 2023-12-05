@@ -32,10 +32,15 @@
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
           </el-menu-item>
+          <el-menu-item index="/crawler">
+            <i class="el-icon-search"></i>
+            <span slot="title">Crawler</span>
+          </el-menu-item>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
           </el-menu-item>
+          
         </el-menu>
       </el-aside>
 
