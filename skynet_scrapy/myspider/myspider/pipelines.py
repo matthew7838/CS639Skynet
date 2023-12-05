@@ -9,14 +9,18 @@ from itemadapter import ItemAdapter
 import pandas as pd
 from datetime import datetime
 import psycopg2
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+print(os.getenv('DB_HOST') )
 
 class OrbitalfocusPipeline:
 
     def __init__(self):
-        hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet'  # make the password 'skynet' when you create the new user
+        hostname = os.getenv('DB_HOST') # this will be universal
+        username = os.getenv('DB_USER') # create a new user with name: 'skynetapp'
+        password = os.getenv('DB_PASSWORD') # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
@@ -74,9 +78,9 @@ class OrbitalfocusPipeline:
 class ReentrypredictorPipeline:
     # this class is for https://aerospace.org/reentries
     def __init__(self):
-        hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet'  # make the password 'skynet' when you create the new user
+        hostname = os.getenv('DB_HOST') # this will be universal
+        username = os.getenv('DB_USER') # create a new user with name: 'skynetapp'
+        password = os.getenv('DB_PASSWORD') # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
@@ -134,9 +138,9 @@ class ReentrypredictorPipeline:
 
 class Planet4589Pipeline:
     def __init__(self):
-        hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet'  # make the password 'skynet' when you create the new user
+        hostname = os.getenv('DB_HOST') # this will be universal
+        username = os.getenv('DB_USER') # create a new user with name: 'skynetapp'
+        password = os.getenv('DB_PASSWORD') # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
