@@ -364,7 +364,7 @@ class UcsdataPipeleine:
                     norad,
                     source,
                     additional_source,
-                    data_status integer
+                    data_status
                 ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 (
