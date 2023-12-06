@@ -45,8 +45,8 @@ class OrbitalfocusspiderSpider(scrapy.Spider):
     def closed(self, reason):
         if self.total_count > 0:
             percentage_completed = (self.processed_count / self.total_count) * 100
-            print(f"OrbitalFocus Scraping progress: {percentage_completed:.2f}% completed.")
-            print('Populating CSV')
+            print(f"\tOrbitalFocus Scraping progress: {percentage_completed:.2f}% completed.")
+            print('\tPopulating CSV')
             current_datetime = datetime.now().strftime('%m-%d-%Y_%H-%M-%S')
             current_month_year = date.today().strftime('%B_%Y')
             folder_name = os.path.join('CSVs/ORBITALFOCUS', current_month_year)
@@ -54,4 +54,4 @@ class OrbitalfocusspiderSpider(scrapy.Spider):
             csv_filename = os.path.join(folder_name, f'orbitalfocus_data_{current_datetime}.csv')
             df = pd.DataFrame(self.scraped_items)
             df.to_csv(csv_filename, index=False)
-            print(f'Scraped data exported to {csv_filename}')
+            print(f'\tScraped data exported to {csv_filename}\n')

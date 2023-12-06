@@ -15,11 +15,12 @@ class OrbitalfocusPipeline:
 
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating orbitalfocus table")
 
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
@@ -75,12 +76,14 @@ class ReentrypredictorPipeline:
     # this class is for https://aerospace.org/reentries
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating aero table")
+
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS aero(
                          object text,
@@ -135,12 +138,14 @@ class ReentrypredictorPipeline:
 class Planet4589Pipeline:
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating orbitalfocus table")
+        
         # changed one of the column from primary to primry for obvious reasons
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
@@ -184,7 +189,8 @@ class Planet4589Pipeline:
                          if text,
                          oporbit text,
                          oqual text,
-                         altnames text)""") # check sdate, odate type
+                         altnames text,
+                         data_status integer)""") # check sdate, odate type
         # extra line
         #self.connection.commit()
 
@@ -212,9 +218,9 @@ class Planet4589Pipeline:
                 """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
                 ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, 
                 totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, 
-                af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                af, inc, if, oporbit, oqual, altnames, status) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s)""",
+                %s, %s, %s, %s)""",
                 (
                     item['JCAT'],
                     item['Satcat'],
@@ -256,7 +262,8 @@ class Planet4589Pipeline:
                     item['IF'],
                     item['OpOrbit'],
                     item['OQUAL'],
-                    item['AltNames']
+                    item['AltNames'],
+                    item['data_status']
                 ))
             self.connection.commit()
         except Exception as e:
@@ -275,7 +282,7 @@ class UcsdataPipeleine:
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
         # changed one of the column from primary to primry for obvious reasons
-        print('creating table')
+        print('creating ucs_master table')
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS ucs_master(
                         full_name text,
@@ -306,7 +313,8 @@ class UcsdataPipeleine:
                         cospar text,
                         norad text,
                         source text,
-                        additional_source text)""")
+                        additional_source text,
+                        data_status integer)""")
         #self.connection.commit()
 
     def close_spider(self, spider):
@@ -355,9 +363,10 @@ class UcsdataPipeleine:
                     cospar,
                     norad,
                     source,
-                    additional_source
+                    additional_source,
+                    data_status integer
                 ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 (
                     item['full_name'],
                     item['official_name'],
@@ -388,6 +397,7 @@ class UcsdataPipeleine:
                     item['norad'],
                     item['source'],
                     item['additional_source'],
+                    item['data_status']
                 ))
             self.connection.commit()
         except Exception as e:

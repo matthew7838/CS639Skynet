@@ -70,6 +70,7 @@ class Planet4589Item(scrapy.Item):
     OpOrbit = scrapy.Field()
     OQUAL = scrapy.Field()
     AltNames = scrapy.Field()
+    data_status = scrapy.Field()
 
 class UcsdataItem(scrapy.Item):
     full_name = scrapy.Field()
@@ -101,3 +102,4 @@ class UcsdataItem(scrapy.Item):
     norad = scrapy.Field()
     source = scrapy.Field()
     additional_source = scrapy.Field()
+    data_status = scrapy.Field()
