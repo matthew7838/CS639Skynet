@@ -10,9 +10,10 @@ class Gatherer:
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print('creating ucs_new_launches table')
 
         self.cur.execute("""
-        CREATE TABLE IF NOT EXISTS UCS_table(
+        CREATE TABLE IF NOT EXISTS ucs_new_launches(
                          full_name text,
                          official_name text,
                          country text,
@@ -38,16 +39,17 @@ class Gatherer:
                          contractor_country text,
                          launch_site text,
                          launch_vehicle text,
-                         COSPAR text PRIMARY KEY,
+                         COSPAR text,
                          NORAD integer,
                          source text,
-                         additional_source text)""")
+                         additional_source text,
+                         data_status integer)""") # dropping COSPAR primary key for now, adding data_status for new launches
         # extra line
         self.connection.commit()
 
     def gather(self):
         sql_query = """
-            INSERT INTO UCS_table (full_name, official_name, owner_country, owner, orbit_class, in_geo, perigee, apogee, inclination, mass, dry_mass, launch_date, contractor, cospar, norad)
+            INSERT INTO ucs_new_launches (full_name, official_name, owner_country, owner, orbit_class, in_geo, perigee, apogee, inclination, mass, dry_mass, launch_date, contractor, cospar, norad, data_status)
             SELECT
                 plname,
                 name,
@@ -66,7 +68,8 @@ class Gatherer:
                 ldate,
                 manufacturer,
                 piece,
-                satcat           
+                satcat,
+                data_status         
             FROM planet4589
         """
         self.cur.execute(sql_query)
