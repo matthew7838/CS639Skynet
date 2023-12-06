@@ -170,6 +170,7 @@ class Satellite_Master(db.Model):
     launch_vehicle = db.Column(db.String(255))
     cospar = db.Column(db.String(255), primary_key=True)
     norad = db.Column(db.String(255))
+    data_status =  db.Column(db.Integer)
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
     
@@ -203,6 +204,7 @@ class Satellite_Master(db.Model):
             'launch_vehicle': self.launch_vehicle,
             'cospar': self.cospar,
             'norad': self.norad,
+            'data_status': self.data_status,
             'source': self.source,
             'additional_source': self.additional_source
         }
@@ -211,7 +213,7 @@ class SatelliteEditRecord(db.Model):
     __tablename__ = 'satellite_edit_records'
     
     id = db.Column(db.Integer, primary_key=True)
-    satellite_name = db.Column(db.String(255), db.ForeignKey('satellites.satellite_name'), nullable=False)
+    cospar = db.Column(db.String(255), db.ForeignKey('ucs_master.cospar'), nullable=False)
     column_name = db.Column(db.String(255), nullable=False)
     old_value = db.Column(db.Text)
     new_value = db.Column(db.Text)
@@ -221,7 +223,7 @@ class SatelliteEditRecord(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'satellite_name': self.satellite_name,
+            'cospar': self.cospar,
             'column_name': self.column_name,
             'old_value': self.old_value,
             'new_value': self.new_value,
@@ -252,14 +254,14 @@ class RecordTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     date = db.Column(db.DateTime)  # Changed to DateTime to store timestamp
-    satellite_name = db.Column(db.String(255), db.ForeignKey('satellites.satellite_name'))
+    cospar = db.Column(db.String(255), db.ForeignKey('ucs_master.cospar'))
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'date': self.date,
-            'satellite_name': self.satellite_name
+            'cospar': self.cospar
         }
 
 

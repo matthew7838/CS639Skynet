@@ -29,7 +29,7 @@ class Planet4589spiderSpider(scrapy.Spider):
         df = df.drop(0)
         df.rename(columns={"#JCAT": "JCAT"}, inplace=True)
         df = df[df['LDate'].str.startswith('2023')]
-        df = df[df['Status'].str.startswith('O')]
+        # df = df[df['Status'].str.startswith('O')]
         #print(f'length = {len(df)}')
         #print(df)
         self.total_count = len(df)

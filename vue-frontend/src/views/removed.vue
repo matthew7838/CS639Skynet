@@ -16,22 +16,29 @@
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
           text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
           :default-active="$route.path">
-          <el-menu-item index="/">
-            <i class="el-icon-house"></i>
-            <span slot="title">Home Page</span>
-          </el-menu-item>
-          <el-menu-item index="/edit">
-            <i class="el-icon-time"></i>
-            <span slot="title">Edit History</span>
-          </el-menu-item>
-          <el-menu-item index="/removed">
-            <i class="el-icon-delete"></i>
-            <span slot="title">Removed</span>
-          </el-menu-item>
-          <el-menu-item index="/history">
-            <i class="el-icon-time"></i>
-            <span slot="title">History</span>
-          </el-menu-item>
+          <!-- Master Database Submenu -->
+          <el-submenu index="1">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Master Database</span>
+            </template>
+            <el-menu-item index="/">
+              <i class="el-icon-house"></i>
+              Home Page
+            </el-menu-item>
+            <el-menu-item index="/edit">
+              <i class="el-icon-edit"></i>
+              Edit History
+            </el-menu-item>
+            <el-menu-item index="/removed">
+              <i class="el-icon-delete"></i>
+              Removed
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <i class="el-icon-time"></i>
+              History
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -46,7 +53,7 @@
           <el-breadcrumb style="margin-left: 20px">
             <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
           </el-breadcrumb>
-          
+
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Remove Page</el-breadcrumb-item>
@@ -60,36 +67,14 @@
         <!--        Main Page-->
         <el-main>
           <el-table :data="filteredData" style="width: 100%">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-            <el-table-column prop="un_registry_country" label="un_registry_country"></el-table-column>
-            <el-table-column prop="operator_country" label="operator_country"></el-table-column>
-            <el-table-column prop="operator" label="operator"></el-table-column>
-            <el-table-column prop="user_type" label="user_type"></el-table-column>
-            <el-table-column prop="purpose" label="purpose"></el-table-column>
-            <el-table-column prop="detailed_purpose" label="detailed_purpose"></el-table-column>
-            <el-table-column prop="orbit_class" label="orbit_class"></el-table-column>
-            <el-table-column prop="orbit_type" label="orbit_type"></el-table-column>
-            <el-table-column prop="longitude_geo" label="longitude_geo"></el-table-column>
-            <el-table-column prop="perigee" label="perigee"></el-table-column>
-            <el-table-column prop="apogee" label="apogee" width="150"></el-table-column>
-            <el-table-column prop="eccentricity" label="eccentricity" width="150"></el-table-column>
-            <el-table-column prop="inclination" label="inclination" width="150"></el-table-column>
-            <el-table-column prop="orbital_period" label="orbital_period" width="150"></el-table-column>
-            <el-table-column prop="launch_mass" label="launch_mass" width="150"></el-table-column>
-            <el-table-column prop="dry_mass" label="dry_mass" width="150"></el-table-column>
-            <el-table-column prop="power" label="power" width="150"></el-table-column>
-            <el-table-column prop="launch_date" label="launch_date" width="150"></el-table-column>
-            <el-table-column prop="lifetime" label="lifetime" width="150"></el-table-column>
-            <el-table-column prop="contractor" label="contractor" width="150"></el-table-column>
-            <el-table-column prop="contractor_country" label="contractor_country" width="150"></el-table-column>
-            <el-table-column prop="launch_site" label="launch_site" width="150"></el-table-column>
-            <el-table-column prop="launch_vehicle" label="launch_vehicle" width="150"></el-table-column>
-            <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
-            <el-table-column prop="norad" label="norad" width="150"></el-table-column>
-            <el-table-column prop="comments" label="comments" width="150"></el-table-column>
-            <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
-            <el-table-column prop="source1" label="source1" width="150"></el-table-column>
-            <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
+            <el-table-column fixed prop="full_name" label="full_name" width="250"></el-table-column>
+            <el-table-column fixed prop="official_name" label="official_name" width="150"></el-table-column>
+            <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
+            </el-table-column>
+            <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+            <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column" width="350">
+            </el-table-column>
+            <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
             <el-table-column fixed="right" prop="removal_reason" label="Reason" width="200"></el-table-column>
             <el-table-column fixed="right" label="Operations" width="120">
               <template slot-scope="scope">
@@ -103,37 +88,15 @@
 
           <!-- Removed Items Table -->
           <el-table :data="removedItems" style="width: 100%; margin-top: 30px;" v-if="removedItems.length > 0">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-            <el-table-column prop="un_registry_country" label="un_registry_country"></el-table-column>
-            <el-table-column prop="operator_country" label="operator_country"></el-table-column>
-            <el-table-column prop="operator" label="operator"></el-table-column>
-            <el-table-column prop="user_type" label="user_type"></el-table-column>
-            <el-table-column prop="purpose" label="purpose"></el-table-column>
-            <el-table-column prop="detailed_purpose" label="detailed_purpose"></el-table-column>
-            <el-table-column prop="orbit_class" label="orbit_class"></el-table-column>
-            <el-table-column prop="orbit_type" label="orbit_type"></el-table-column>
-            <el-table-column prop="longitude_geo" label="longitude_geo"></el-table-column>
-            <el-table-column prop="perigee" label="perigee"></el-table-column>
-            <el-table-column prop="apogee" label="apogee" width="150"></el-table-column>
-            <el-table-column prop="eccentricity" label="eccentricity" width="150"></el-table-column>
-            <el-table-column prop="inclination" label="inclination" width="150"></el-table-column>
-            <el-table-column prop="orbital_period" label="orbital_period" width="150"></el-table-column>
-            <el-table-column prop="launch_mass" label="launch_mass" width="150"></el-table-column>
-            <el-table-column prop="dry_mass" label="dry_mass" width="150"></el-table-column>
-            <el-table-column prop="power" label="power" width="150"></el-table-column>
-            <el-table-column prop="launch_date" label="launch_date" width="150"></el-table-column>
-            <el-table-column prop="lifetime" label="lifetime" width="150"></el-table-column>
-            <el-table-column prop="contractor" label="contractor" width="150"></el-table-column>
-            <el-table-column prop="contractor_country" label="contractor_country" width="150"></el-table-column>
-            <el-table-column prop="launch_site" label="launch_site" width="150"></el-table-column>
-            <el-table-column prop="launch_vehicle" label="launch_vehicle" width="150"></el-table-column>
-            <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
-            <el-table-column prop="norad" label="norad" width="150"></el-table-column>
-            <el-table-column prop="comments" label="comments" width="150"></el-table-column>
-            <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
-            <el-table-column prop="source1" label="source1" width="150"></el-table-column>
-            <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
-            <el-table-column fixed="right" prop="removal_reason" label="Removal Reason" width="200"></el-table-column>
+            <el-table-column fixed prop="full_name" label="full_name" width="250"></el-table-column>
+            <el-table-column fixed prop="official_name" label="official_name" width="150"></el-table-column>
+            <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
+            </el-table-column>
+            <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+            <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column" width="350">
+            </el-table-column>
+            <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
+            <el-table-column fixed="right" prop="removal_reason" label="Reason" width="200"></el-table-column>
             <el-table-column fixed="right" label="Operations" width="120">
               <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-refresh" size="mini" @click="undoRemove(scope.$index, scope.row)">
@@ -166,17 +129,20 @@ export default {
       removedItems: [],
       searchQuery: '',
       username: '',
+      columns: [], // This now includes all columns
+      dynamicColumns: [],
+      editColumns: []
     };
   },
   mounted() {
-    this.fetchSatellites();
+    this.fetchRemovedSatellites();
     this.getUsername();
   },
   computed: {
     // Add a computed property for filtering data
     filteredData() {
       if (this.searchQuery) {
-        return this.tableData.filter(item => 
+        return this.tableData.filter(item =>
           item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
@@ -193,13 +159,20 @@ export default {
       this.username = localStorage.getItem('username');
       console.log("Retrieved username:", this.username);
     },
-    async fetchSatellites() {
+    async fetchRemovedSatellites() {
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/removed"
-
-        ); // replace with your Flask app URL
+        const response = await axios.get("http://localhost:8000/api/removed");
         this.tableData = response.data;
+        if (this.tableData.length > 0) {
+          const allColumns = Object.keys(this.tableData[0]);
+          this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+          this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'removal_reason'];
+
+          // Define editColumns as all columns that are not dynamic or manual
+          this.editColumns = allColumns.filter(col =>
+            !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+          );
+        }
         console.log(this.tableData);
       } catch (error) {
         console.error("There was an error fetching the data:", error);
@@ -225,16 +198,13 @@ export default {
     publishChanges() {
 
       // Update data_status for all removed items
-      let updatedItems = this.removedItems.map(item => {
-        return {
-          ...item,
-          data_status: item.data_status === 1 ? 2 : item.data_status
-        };
-      });
+      let cospar_list = this.removedItems.map(item => item.cospar);
+
+      console.log(cospar_list)
 
       // Send the updated items and publisher name to the backend for database update
       axios.post('http://localhost:8000/api/update-status', {
-        updatedItems: updatedItems,
+        cospar_list: cospar_list,
         name: this.username  // Include the username in the request payload
       })
         .then(response => {
@@ -333,6 +303,10 @@ export default {
   box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
   display: flex;
   align-items: center;
+}
+
+.no-transition-submenu .el-menu--collapse {
+  transition: none !important;
 }
 </style>
   

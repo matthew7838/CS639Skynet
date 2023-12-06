@@ -134,17 +134,36 @@ def get_satellites_new():
 @app.route('/api/satellites_master', methods=['GET'])
 def get_satellites_master():
     try:
-        # Query the skynet_satellites table
-        results = Satellite_Master.query.filter().all()
+        # Pagination parameters
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 100, type=int)
+        offset = (page - 1) * limit
 
-        # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
+        # Search query parameter
+        search_query = request.args.get('search', '', type=str)
 
-        return jsonify(data)
+        # Query with optional filtering
+        query = Satellite_Master.query
+        if search_query:
+            query = query.filter(func.lower(Satellite_Master.cospar).like(f'%{search_query.lower()}%'))  # Example for filtering by name
+
+        # Get total count after filtering
+        total_count = query.count()
+
+        # Apply pagination
+        results = query.offset(offset).limit(limit).all()
+
+        # Convert data to dict
+        data = [row.to_dict() for row in results]
+
+        return jsonify({
+            'data': data,
+            'total_count': total_count
+        })
+
     except Exception as e:
-        # Log the exception for debugging purposes
         print("Error:", e)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 
 
@@ -153,17 +172,17 @@ def get_removed_satellites():
     try:
         # Query the skynet_satellites table for removed satellites (data_status = 1)
         results = db.session.query(
-            Satellite, 
+            Satellite_Master, 
             SatelliteRemovalRecord.reason
         ).join(
             SatelliteRemovalRecord, 
-            Satellite.cospar == SatelliteRemovalRecord.cospar
-        ).filter(Satellite.data_status == 2).all()
+            Satellite_Master.cospar == SatelliteRemovalRecord.cospar
+        ).filter(Satellite_Master.data_status == 3).all()
 
         # Serialize the results into a list of dictionaries
         data = [
             {
-                **row.Satellite.to_dict(), 
+                **row.Satellite_Master.to_dict(), 
                 "removal_reason": row.reason
             } for row in results
         ]
@@ -178,14 +197,15 @@ def get_removed_satellites():
 @app.route('/api/update-status', methods=['POST'])
 def update_status():
     data = request.get_json()
-    satellite_names = [item['satellite_name'] for item in data['updatedItems']]
+    cospar_list = data['cospar_list']
+    print(cospar_list)
     name = data.get('name', 'Unknown')
     current_date = datetime.now()
 
     try:
-        for satellite_name in satellite_names:
+        for cospar in cospar_list:
             # Update the SkynetSatellite table
-            satellite = Satellite.query.filter_by(satellite_name=satellite_name).first()
+            satellite = Satellite_Master.query.filter_by(cospar=cospar).first()
             if satellite:
                 satellite.data_status = 4
                 db.session.add(satellite)
@@ -194,7 +214,7 @@ def update_status():
                 print(f"Updating satellite: {satellite}")
 
                 # Insert a record into the RecordTable
-                new_record = RecordTable(name=name, date=current_date, satellite_name=satellite_name)
+                new_record = RecordTable(name=name, date=current_date, cospar=cospar)
                 db.session.add(new_record)
 
                 # Debug print
@@ -215,11 +235,11 @@ def get_history_records():
         results = db.session.query(
             RecordTable.name, 
             RecordTable.date, 
-            RecordTable.satellite_name
+            RecordTable.cospar
         ).all()
 
         # Serialize the results into a list of dictionaries
-        data = [{'name': r.name, 'date': r.date, 'satellite_name': r.satellite_name} for r in results]
+        data = [{'name': r.name, 'date': r.date, 'cospar': r.cospar} for r in results]
 
         return jsonify(data)
     except Exception as e:
@@ -228,18 +248,18 @@ def get_history_records():
 
 
 @app.route('/api/history/details', methods=['GET'])
-def get_jcat_details():
+def get_cospar_details():
     try:
-        satellite_name = request.args.get('satellite_name')
+        cospar = request.args.get('cospar')
 
         # Perform a join with the SatelliteRemovalRecord table
         results = db.session.query(
-            Satellite, 
+            Satellite_Master, 
             SatelliteRemovalRecord.reason
         ).outerjoin(
             SatelliteRemovalRecord, 
-            Satellite.cospar == SatelliteRemovalRecord.cospar
-        ).filter(Satellite.satellite_name == satellite_name).all()
+            Satellite_Master.cospar == SatelliteRemovalRecord.cospar
+        ).filter(Satellite_Master.cospar == cospar).all()
 
         # Serialize the results
         satellites_details = []
@@ -250,7 +270,7 @@ def get_jcat_details():
 
         return jsonify(satellites_details)
     except Exception as e:
-        app.logger.error('Error in get_jcat_details: ' + str(e))
+        app.logger.error('Error in get_cospar_details: ' + str(e))
         return jsonify({"error": str(e)}), 500
 
 
@@ -265,11 +285,11 @@ def edit_data():
         print("Received edit records:", edit_records)  # Debug print
 
         for record in edit_records:
-            print(f"Processing record for satellite_name: {record['satellite_name']}")  # Debug print
+            print(f"Processing record for cospar: {record['cospar']}")  # Debug print
 
             # Insert into satellite_edit_records
             new_edit_record = SatelliteEditRecord(
-                satellite_name=record['satellite_name'],
+                cospar=record['cospar'],
                 column_name=record['column'],
                 old_value=record['oldValue'],
                 new_value=record['newValue'],
@@ -278,9 +298,9 @@ def edit_data():
             db.session.add(new_edit_record)
 
             # Update skynet_satellites
-            update_result = Satellite.query.filter_by(satellite_name=record['satellite_name']).update(
+            update_result = Satellite_Master.query.filter_by(cospar=record['cospar']).update(
                 {record['column']: record['newValue']})
-            print(f"Update result for satellite_name {record['satellite_name']}: {update_result}")  # Debug print
+            print(f"Update result for satellite_name {record['cospar']}: {update_result}")  # Debug print
 
         db.session.commit()
         return jsonify({'message': 'Data updated successfully'}), 200
@@ -323,12 +343,12 @@ def remove_sat():
 
     try:
         # Find the satellite using the cospar ID
-        satellite = Satellite.query.filter_by(cospar=cospar_id).first()
+        satellite = Satellite_Master.query.filter_by(cospar=cospar_id).first()
         if not satellite:
             return jsonify({'error': 'Satellite not found'}), 404
 
         # Update the satellite status to indicate it has been removed
-        satellite.data_status = 2
+        satellite.data_status = 3
         db.session.add(satellite)
 
         # Create a new removal record

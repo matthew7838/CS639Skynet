@@ -15,7 +15,7 @@ class OrbitalfocusPipeline:
 
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        username = 'postgres'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
@@ -75,7 +75,7 @@ class ReentrypredictorPipeline:
     # this class is for https://aerospace.org/reentries
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        username = 'postgres'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
@@ -135,7 +135,7 @@ class ReentrypredictorPipeline:
 class Planet4589Pipeline:
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        username = 'postgres'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
@@ -268,7 +268,7 @@ class UcsdataPipeleine:
 
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        username = 'postgres'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 

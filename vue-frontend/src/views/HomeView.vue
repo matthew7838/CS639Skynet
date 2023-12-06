@@ -4,34 +4,41 @@
       <!--    SideBar  -->
       <el-aside :width="asideWidth" style="min-height: 100vh; background-color: #001529">
         <div style="
-                                height: 60px;
-                                color: white;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                              ">
+            height: 60px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
           text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
           :default-active="$route.path">
-          <el-menu-item index="/">
-            <i class="el-icon-house"></i>
-            <span slot="title">Home Page</span>
-          </el-menu-item>
-          <el-menu-item index="/edit">
-            <i class="el-icon-time"></i>
-            <span slot="title">Edit History</span>
-          </el-menu-item>
-          <el-menu-item index="/removed">
-            <i class="el-icon-delete"></i>
-            <span slot="title">Removed</span>
-          </el-menu-item>
-          <el-menu-item index="/history">
-            <i class="el-icon-time"></i>
-            <span slot="title">History</span>
-          </el-menu-item>
+          <!-- Master Database Submenu -->
+          <el-submenu index="1">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Master Database</span>
+            </template>
+            <el-menu-item index="/">
+              <i class="el-icon-house"></i>
+              Home Page
+            </el-menu-item>
+            <el-menu-item index="/edit">
+              <i class="el-icon-edit"></i>
+              Edit History
+            </el-menu-item>
+            <el-menu-item index="/removed">
+              <i class="el-icon-delete"></i>
+              Removed
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <i class="el-icon-time"></i>
+              History
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -51,14 +58,13 @@
             <el-breadcrumb-item>Home Page</el-breadcrumb-item>
           </el-breadcrumb>
 
-
-
           <!-- Search input for satellite name -->
-          <el-input v-model="searchQuery" placeholder="Search by Satellite Name"
-            style="width: 300px; margin-left: 20px; margin-right: 20px;">
+          <el-input v-model="searchQuery" placeholder="Search by Cospar"
+            style="width: 300px; margin-left: 20px; margin-right: 20px">
           </el-input>
 
-          Remove: <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px;" />
+          Remove:
+          <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px" />
 
           <el-dropdown>
             <el-button>
@@ -73,125 +79,48 @@
               </el-checkbox-group>
             </el-dropdown-menu>
           </el-dropdown>
-
-
         </el-header>
 
         <!--        Main Page-->
         <el-main>
-
-
-          <el-table :data="filteredData" border style="width: 100%" :row-style="
-            ({ row }) =>
-              row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
-          ">
-            <el-table-column fixed prop="satellite_name" label="satellite_name">
-              <!-- copy v-if to filter column -->
-            </el-table-column>
-            <el-table-column prop="un_registry_country" label="un_registry_country" :filters="[
+          <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
+            row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
+            ">
+            <el-table-column fixed prop="full_name" label="full_name" width="250"></el-table-column>
+            <el-table-column fixed prop="official_name" label="official_name" width="150"></el-table-column>
+            <el-table-column prop="country" label="country" :filters="[
               { text: 'Country11', value: 'Country11' },
               { text: 'Country12', value: 'Country12' },
               { text: 'Country13', value: 'Country13' },
-              { text: 'Country14', value: 'Country14' },]" :filter-method="filterHandler"
-              filter-placement="bottom-start" v-if="selectedColumns.includes('un_registry_country')">
+              { text: 'Country14', value: 'Country14' },
+            ]" :filter-method="filterHandler" filter-placement="bottom-start"
+              v-if="selectedColumns.includes('country')" width="150">
               <!-- copy template to if want edit function -->
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
-                <div v-if="!scope.row.editing">{{ scope.row.un_registry_country }}</div>
+                <div v-if="!scope.row.editing">{{ scope.row.country }}</div>
                 <!-- If the row is in editing mode, show the input with tooltip -->
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.un_registry_country"
-                  placement="top-start">
-                  <el-input v-model="scope.row.un_registry_country" size="mini"></el-input>
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row.country" placement="top-start">
+                  <el-input v-model="scope.row.country" size="mini"></el-input>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="operator_country" label="operator_country"
-              v-if="selectedColumns.includes('operator_country')">
+            <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
               <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.operator_country }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator_country" placement="top-start">
-                  <el-input v-model="scope.row.operator_country" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="operator" label="operator" v-if="selectedColumns.includes('operator')">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.operator }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.operator" placement="top-start">
-                  <el-input v-model="scope.row.operator" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="user_type" label="user_type" width="120">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.user_type }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.user_type" placement="top-start">
-                  <el-input v-model="scope.row.user_type" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="purpose" label="purpose">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.purpose }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.purpose" placement="top-start">
-                  <el-input v-model="scope.row.purpose" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="detailed_purpose" label="detailed_purpose">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.detailed_purpose }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.detailed_purpose" placement="top-start">
-                  <el-input v-model="scope.row.detailed_purpose" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="orbit_class" label="orbit_class">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.orbit_class }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.orbit_class" placement="top-start">
-                  <el-input v-model="scope.row.orbit_class" size="mini"></el-input>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-            <el-table-column prop="orbit_type" label="orbit_type" width="120">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">
-                  {{ scope.row.orbit_type }}
+                <div v-if="!scope.row.editing || !isEditable(column)">
+                  {{ scope.row[column] }}
                 </div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.orbit_type" placement="top-start">
-                  <el-input v-model="scope.row.orbit_type" size="mini"></el-input>
+                <el-tooltip v-else class="item" effect="dark" :content="scope.row[column]" placement="top-start">
+                  <el-input v-model="scope.row[column]" size="mini"></el-input>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="longitude_geo" label="longitude_geo">
-              <template slot-scope="scope">
-                <div v-if="!scope.row.editing">{{ scope.row.longitude_geo }}</div>
-                <el-tooltip v-else class="item" effect="dark" :content="scope.row.longitude_geo" placement="top-start">
-                  <el-input v-model="scope.row.longitude_geo" size="mini"></el-input>
-                </el-tooltip>
-              </template>
+            <!-- Dynamically generated 'source' columns -->
+            <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column" width="350">
             </el-table-column>
-            <el-table-column prop="perigee" label="perigee"></el-table-column>
-            <el-table-column prop="apogee" label="apogee" width="150"></el-table-column>
-            <el-table-column prop="eccentricity" label="eccentricity" width="150"></el-table-column>
-            <el-table-column prop="inclination" label="inclination" width="150"></el-table-column>
-            <el-table-column prop="orbital_period" label="orbital_period" width="150"></el-table-column>
-            <el-table-column prop="launch_mass" label="launch_mass" width="150"></el-table-column>
-            <el-table-column prop="dry_mass" label="dry_mass" width="150"></el-table-column>
-            <el-table-column prop="power" label="power" width="150"></el-table-column>
-            <el-table-column prop="launch_date" label="launch_date" width="150"></el-table-column>
-            <el-table-column prop="lifetime" label="lifetime" width="150"></el-table-column>
-            <el-table-column prop="contractor" label="contractor" width="150"></el-table-column>
-            <el-table-column prop="contractor_country" label="contractor_country" width="150"></el-table-column>
-            <el-table-column prop="launch_site" label="launch_site" width="150"></el-table-column>
-            <el-table-column prop="launch_vehicle" label="launch_vehicle" width="150"></el-table-column>
-            <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
-            <el-table-column prop="norad" label="norad" width="150"></el-table-column>
-            <el-table-column prop="comments" label="comments" width="150"></el-table-column>
-            <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
-            <el-table-column prop="source1" label="source1" width="150"></el-table-column>
-            <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
+            <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+            <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
+            <!--<el-table-column prop="data_status" label="data_status" width="150"></el-table-column> -->
             <el-table-column fixed="right" label="Edit">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
@@ -213,6 +142,11 @@
           </el-table>
         </el-main>
 
+        <el-pagination @size-change="handleSizeChange" @current-change="handlePageChange" :current-page="currentPage"
+          :page-sizes="[10, 20, 30, 40]" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper"
+          :total="totalItems">
+        </el-pagination>
+
         <el-dialog title="Select a Reason for Removal" :visible.sync="isRemoveModalVisible" width="30%">
           <el-radio-group v-model="selectedOption">
             <el-radio label="Re-entered">Re-entered</el-radio>
@@ -228,7 +162,6 @@
             <el-button type="primary" @click="confirmRemoval">Confirm</el-button>
           </span>
         </el-dialog>
-
       </el-container>
     </el-container>
   </div>
@@ -247,14 +180,20 @@ export default {
       editDialogVisible: false,
       backupRow: null,
       filtersActive: false,
-      // TODO put all columns in selectedColumns  expect pk  
-      selectedColumns: ['un_registry_country', 'operator_country', 'operator'],
-      searchQuery: '',
-      username: '',
+      // TODO put all columns data_status
+      selectedColumns: ["country", "owner_country", "owner"],
+      searchQuery: "",
+      username: "",
       showRemoveColumn: false,
       isRemoveModalVisible: false,
-      selectedOption: '',
-      otherReason: '',
+      selectedOption: "",
+      otherReason: "",
+      currentPage: 1,
+      totalItems: 0,
+      pageSize: 10,
+      columns: [], // This now includes all columns
+      editColumns: [],
+      dynamicColumns: []
     };
   },
   mounted() {
@@ -262,6 +201,10 @@ export default {
     this.getUsername();
   },
   methods: {
+    isEditable(column) {
+      const nonEditableColumns = ['cospar', 'source'];
+      return !nonEditableColumns.includes(column);
+    },
     handleRemoveRow(row) {
       this.currentRow = row; // Store the current row for further processing
       this.isRemoveModalVisible = true; // Show the modal
@@ -270,17 +213,20 @@ export default {
       // Construct the payload to be sent
       const payload = {
         cospar: this.currentRow.cospar, // Assuming 'satellite_name' is the identifier
-        reason: this.selectedOption === 'Others' ? this.otherReason : this.selectedOption,
+        reason:
+          this.selectedOption === "Others"
+            ? this.otherReason
+            : this.selectedOption,
       };
 
-      console.log(payload)
+      console.log(payload);
 
-          
       // Send an AJAX request
-      axios.post('http://localhost:8000/api/remove-sat', payload)
-        .then(response => {
+      axios
+        .post("http://localhost:8000/api/remove-sat", payload)
+        .then((response) => {
           // Handle success response
-          console.log('Data sent successfully:', response);
+          console.log("Data sent successfully:", response);
 
           // Remove the row from the local data, if needed
           const index = this.tableData.indexOf(this.currentRow);
@@ -288,38 +234,67 @@ export default {
             this.tableData.splice(index, 1);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           // Handle error response
-          console.error('Error sending data:', error);
+          console.error("Error sending data:", error);
         });
 
       // Reset modal state and hide it
       this.isRemoveModalVisible = false;
-      this.selectedOption = '';
-      this.otherReason = '';
+      this.selectedOption = "";
+      this.otherReason = "";
     },
     logout() {
-      localStorage.removeItem('authToken'); // 清除本地存储中的 token
-      this.$router.push('/login'); // 重定向到登录页面
+      localStorage.removeItem("authToken"); // 清除本地存储中的 token
+      this.$router.push("/login"); // 重定向到登录页面
     },
     getUsername() {
       // Retrieve the username from local storage
-      this.username = localStorage.getItem('username');
+      this.username = localStorage.getItem("username");
       console.log("Retrieved username:", this.username);
     },
     async fetchSatellites() {
+      const limit = 10;
+      const page = this.currentPage;
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/satellites"
+        /* const response = await axios.get(
+          "http://localhost:8000/api/satellites_master?page=${page}&limit=${limit}"
         ); // replace with your Flask app URL
         this.tableData = response.data.map((row) => ({
           ...row,
           editing: false,
-        }));
+        }));*/
+        axios.get(`http://localhost:8000/api/satellites_master?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
+          .then(response => {
+            this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
+            console.log("Table Data:", this.tableData);
+            this.totalItems = response.data.total_count;
+            // Extract column names from the first row of tableData
+            if (this.tableData.length > 0) {
+              const allColumns = Object.keys(this.tableData[0]);
+              this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+              this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status'];
+
+              // Define editColumns as all columns that are not dynamic or manual
+              this.editColumns = allColumns.filter(col =>
+                !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+              );
+            }
+          })
+          .catch(error => console.error("Error:", error));
+
         console.log(this.tableData);
       } catch (error) {
         console.error("There was an error fetching the data:", error);
       }
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchSatellites();
+    },
+    handleSizeChange(newSize) {
+      this.pageSize = newSize;
+      this.fetchSatellites();
     },
     removeRow(index, row) {
       this.tableData.splice(index, 1); // Remove the row
@@ -333,43 +308,40 @@ export default {
       return "";
     },
     startEdit(row) {
-      // Backup the original data
+      console.log("Starting edit on row:", row);
       this.backupRow = Object.assign({}, row);
-      this.tableData.forEach((r) => {
-        r.editing = false;
-      }); // Ensure only one row is in edit mode
+      this.tableData.forEach(r => r.editing = false);
       row.editing = true;
     },
     saveEdit(row) {
       let edit_records = [];
       // Collect changes, excluding the 'editing' property
       for (const key in row) {
-        if (key !== 'editing' && row[key] !== this.backupRow[key]) {
+        if (key !== "editing" && row[key] !== this.backupRow[key]) {
           let record = {
-            satellite_name: row.satellite_name, // Add the JCAT value here
+            cospar: row.cospar, // Add the JCAT value here
             column: key,
             oldValue: this.backupRow[key],
             newValue: row[key],
-            time: new Date().toISOString() // ISO format time of the edit
+            time: new Date().toISOString(), // ISO format time of the edit
           };
           edit_records.push(record);
         }
       }
-
       if (edit_records.length > 0) {
         // Send the edit records to the backend
-        axios.post('http://localhost:8000/api/edit-data', {
-          edit_records: edit_records,
-          name: this.username
-        })
-          .then(response => {
-            console.log('Edit records sent successfully', response);
+        axios
+          .post("http://localhost:8000/api/edit-data", {
+            edit_records: edit_records,
+            name: this.username,
           })
-          .catch(error => {
-            console.error('Error sending edit records', error);
+          .then((response) => {
+            console.log("Edit records sent successfully", response);
+          })
+          .catch((error) => {
+            console.error("Error sending edit records", error);
           });
       }
-
       // Clear the backup since changes are saved
       this.backupRow = null;
       row.editing = false;
@@ -390,17 +362,35 @@ export default {
   },
   computed: {
     filteredData() {
-      // Filter based on selectedColumns and searchQuery
-      return this.tableData.filter(row => {
-        // Check if the satellite name contains the search query
-        const matchesSearch = row.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase());
 
-        // Check if the row's columns are selected for display
-        const columnsSelected = this.selectedColumns.length === 0 || this.selectedColumns.some(col => row.hasOwnProperty(col));
+      // Check if there's any data to filter
+      if (!this.tableData || this.tableData.length === 0) {
+        console.log("No data available to filter.");
+        return [];
+      }
 
-        return matchesSearch && columnsSelected;
+      // Simplify the filter for debugging
+      const result = this.tableData.filter(row => {
+        console.log("Row Data:", row); // Log each row data
+
+        // Debugging: Check if `full_name` is defined in the row
+        if (!row.cospar) {
+        }
+
+        // Temporary simplified search filter
+        const matchesSearch = !this.searchQuery || (row.cospar && row.cospar.toLowerCase().includes(this.searchQuery.toLowerCase()));
+
+        return matchesSearch; // Only apply the search filter for now
       });
+      return result;
     },
+  },
+  watch: {
+    searchQuery(newQuery, oldQuery) {
+      console.log('Search query changed from', oldQuery, 'to', newQuery);
+      this.currentPage = 1; // Reset to the first page
+      this.fetchSatellites(); // Fetch filtered data
+    }
   },
 };
 </script>
@@ -545,7 +535,40 @@ export default {
   margin-bottom: 20px;
 }
 
-.el-button--small{
+.el-button--small {
   margin: 5px;
+}
+
+
+/* Pagination Styles */
+.el-pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  /* Center align the pagination control */
+  padding: 10px 0;
+  background: #f4f4f5;
+  /* Light background for pagination area */
+  border-top: 1px solid #ebeef5;
+  /* Border top for separation */
+}
+
+/* Pagination button styling */
+.el-pagination button {
+  color: #1890ff;
+  /* Primary color for buttons */
+  margin: 0 5px;
+  /* Spacing between buttons */
+}
+
+/* Active page number styling */
+.el-pagination .el-pager li.active {
+  background-color: #1890ff;
+  color: #fff;
+  border-color: #1890ff;
+}
+
+.no-transition-submenu .el-menu--collapse {
+  transition: none !important;
 }
 </style>
