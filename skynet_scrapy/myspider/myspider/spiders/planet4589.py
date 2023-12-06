@@ -33,7 +33,7 @@ class Planet4589spiderSpider(scrapy.Spider):
         #print(f'length = {len(df)}')
         #print(df)
         self.total_count = len(df)
-        progress_bar = tqdm(total=self.total_count, desc='GCAT Scraping Progress', unit='item')
+        progress_bar = tqdm(total=self.total_count, desc='New Launches Scraping Progress', unit='item')
 
         for index, row in df.iterrows():
             sat_item = Planet4589Item()
@@ -49,13 +49,13 @@ class Planet4589spiderSpider(scrapy.Spider):
     def closed(self, reason):
         if self.total_count > 0:
             percentage_completed = (self.processed_count / self.total_count) * 100
-            print(f"GCAT Scraping progress: {percentage_completed:.2f}% completed.")
-            print('Populating CSV now')
+            print(f"\tNew Launches Scraping progress: {percentage_completed:.2f}% completed.")
+            print('\tPopulating CSV now')
             current_datetime = datetime.now().strftime('%m-%d-%Y_%H-%M-%S')
             current_month_year = date.today().strftime('%B_%Y')
-            folder_name = os.path.join('CSVs/GCAT', current_month_year)
+            folder_name = os.path.join('CSVs/UCS_NEW', current_month_year)
             os.makedirs(folder_name, exist_ok=True)
-            csv_filename = os.path.join(folder_name, f'gcat_data_{current_datetime}.csv')
+            csv_filename = os.path.join(folder_name, f'ucs_new_launches_{current_datetime}.csv')
             df = pd.DataFrame(self.scraped_items)
             df.to_csv(csv_filename, index=False)
-            print(f'Scraped data exported to {csv_filename}')
+            print(f'\tScraped data exported to {csv_filename}\n')
