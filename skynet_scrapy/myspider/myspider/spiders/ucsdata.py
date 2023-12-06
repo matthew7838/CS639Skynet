@@ -169,4 +169,13 @@ class UcsdataSpider(scrapy.Spider):
     def closed(self, reason):
         if self.total_count > 0:
             percentage_completed = (self.processed_count / self.total_count) * 100
-            print(f"Latest UCS Excel Scraping progress: {percentage_completed:.2f}% completed.")
+            print(f"\tLatest UCS Excel Scraping progress: {percentage_completed:.2f}% completed.")
+            print('\tPopulating CSV now')
+            current_datetime = datetime.now().strftime('%m-%d-%Y_%H-%M-%S')
+            current_month_year = date.today().strftime('%B_%Y')
+            folder_name = os.path.join('CSVs/UCS_MASTER', current_month_year)
+            os.makedirs(folder_name, exist_ok=True)
+            csv_filename = os.path.join(folder_name, f'ucs_master_{current_datetime}.csv')
+            df = pd.DataFrame(self.scraped_items)
+            df.to_csv(csv_filename, index=False)
+            print(f'\tScraped data exported to {csv_filename}\n')
