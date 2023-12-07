@@ -16,22 +16,28 @@
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
           text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
           :default-active="$route.path">
-          <el-menu-item index="/">
-            <i class="el-icon-house"></i>
-            <span slot="title">Home Page</span>
-          </el-menu-item>
-          <el-menu-item index="/edit">
-            <i class="el-icon-time"></i>
-            <span slot="title">Edit History</span>
-          </el-menu-item>
-          <el-menu-item index="/removed">
-            <i class="el-icon-delete"></i>
-            <span slot="title">Removed</span>
-          </el-menu-item>
-          <el-menu-item index="/history">
-            <i class="el-icon-time"></i>
-            <span slot="title">History</span>
-          </el-menu-item>
+          <el-submenu index="1">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Master Database</span>
+            </template>
+            <el-menu-item index="/">
+              <i class="el-icon-house"></i>
+              Home Page
+            </el-menu-item>
+            <el-menu-item index="/edit">
+              <i class="el-icon-edit"></i>
+              Edit History
+            </el-menu-item>
+            <el-menu-item index="/removed">
+              <i class="el-icon-delete"></i>
+              Removed
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <i class="el-icon-time"></i>
+              History
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item index="/crawler">
             <i class="el-icon-search"></i>
             <span slot="title">Crawler</span>
@@ -51,21 +57,21 @@
           <el-breadcrumb style="margin-left: 20px">
             <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
           </el-breadcrumb>
-          
+
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Edit Page</el-breadcrumb-item>
           </el-breadcrumb>
 
           <!-- Search input for satellite name -->
-          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          <el-input v-model="searchQuery" placeholder="Search by Cospar" style="width: 300px; margin-left: 20px;">
           </el-input>
         </el-header>
 
         <!--        Main Page-->
         <el-main>
           <el-table :data="filteredData" style="width: 100%">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
+            <el-table-column fixed prop="cospar" label="cospar"></el-table-column>
             <el-table-column prop="column_name" label="Column Name"></el-table-column>
             <el-table-column prop="old_value" label="Old Value"></el-table-column>
             <el-table-column prop="new_value" label="New Value"></el-table-column>
@@ -80,7 +86,10 @@
   </div>
 </template>
   
+
 <script>
+
+
 import axios from "axios";
 export default {
   data() {
@@ -100,8 +109,8 @@ export default {
     // Add a computed property for filtering data
     filteredData() {
       if (this.searchQuery) {
-        return this.tableData.filter(item => 
-          item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        return this.tableData.filter(item =>
+          item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
       return this.tableData;
@@ -234,6 +243,10 @@ export default {
 
 .el-button+.el-button {
   margin-left: 0px;
+}
+
+.no-transition-submenu .el-menu--collapse {
+  transition: none !important;
 }
 </style>
   

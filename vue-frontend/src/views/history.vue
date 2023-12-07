@@ -15,22 +15,29 @@
             <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
                 :default-active="$route.path">
-                <el-menu-item index="/">
-                    <i class="el-icon-house"></i>
-                    <span slot="title">Home Page</span>
-                </el-menu-item>
-                <el-menu-item index="/edit">
-                    <i class="el-icon-time"></i>
-                    <span slot="title">Edit History</span>
-                </el-menu-item>
-                <el-menu-item index="/removed">
-                    <i class="el-icon-delete"></i>
-                    <span slot="title">Removed</span>
-                </el-menu-item>
-                <el-menu-item index="/history">
-                    <i class="el-icon-time"></i>
-                    <span slot="title">History</span>
-                </el-menu-item>
+                <!-- Master Database Submenu -->
+                <el-submenu index="1">
+                    <template slot="title">
+                        <i class="el-icon-menu"></i>
+                        <span>Master Database</span>
+                    </template>
+                    <el-menu-item index="/">
+                        <i class="el-icon-house"></i>
+                        Home Page
+                    </el-menu-item>
+                    <el-menu-item index="/edit">
+                        <i class="el-icon-edit"></i>
+                        Edit History
+                    </el-menu-item>
+                    <el-menu-item index="/removed">
+                        <i class="el-icon-delete"></i>
+                        Removed
+                    </el-menu-item>
+                    <el-menu-item index="/history">
+                        <i class="el-icon-time"></i>
+                        History
+                    </el-menu-item>
+                </el-submenu>
                 <el-menu-item index="/crawler">
                     <i class="el-icon-search"></i>
                     <span slot="title">Crawler</span>
@@ -57,15 +64,14 @@
                     <el-breadcrumb-item :to="{ path: '/' }">History Page</el-breadcrumb-item>
                 </el-breadcrumb>
                 <!-- Search input for satellite name -->
-                <el-input v-model="searchQuery" placeholder="Search by Satellite Name"
-                    style="width: 300px; margin-left: 20px;">
+                <el-input v-model="searchQuery" placeholder="Search by Cospar" style="width: 300px; margin-left: 20px;">
                 </el-input>
             </el-header>
             <el-main>
                 <el-table :data="filteredData" style="width: 100%">
                     <el-table-column prop="name" label="Name"></el-table-column>
                     <el-table-column prop="date" label="Date" width="180"></el-table-column>
-                    <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
+                    <el-table-column fixed prop="cospar" label="cospar"></el-table-column>
                     <el-table-column label="Operations" width="100">
                         <template slot-scope="scope">
                             <el-button type="text" size="small" @click="showDetails(scope.row)">Show</el-button>
@@ -75,39 +81,17 @@
             </el-main>
             <!-- Add a modal dialog for showing JCAT details -->
             <el-dialog :visible.sync="showJCATModal" title="Satellite Details">
-                <el-table :data="jcatDetails" style="width: 100%">
-                    <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-                    <el-table-column prop="un_registry_country" label="un_registry_country"></el-table-column>
-                    <el-table-column prop="operator_country" label="operator_country"></el-table-column>
-                    <el-table-column prop="operator" label="operator"></el-table-column>
-                    <el-table-column prop="user_type" label="user_type"></el-table-column>
-                    <el-table-column prop="purpose" label="purpose"></el-table-column>
-                    <el-table-column prop="detailed_purpose" label="detailed_purpose"></el-table-column>
-                    <el-table-column prop="orbit_class" label="orbit_class"></el-table-column>
-                    <el-table-column prop="orbit_type" label="orbit_type"></el-table-column>
-                    <el-table-column prop="longitude_geo" label="longitude_geo"></el-table-column>
-                    <el-table-column prop="perigee" label="perigee"></el-table-column>
-                    <el-table-column prop="apogee" label="apogee" width="150"></el-table-column>
-                    <el-table-column prop="eccentricity" label="eccentricity" width="150"></el-table-column>
-                    <el-table-column prop="inclination" label="inclination" width="150"></el-table-column>
-                    <el-table-column prop="orbital_period" label="orbital_period" width="150"></el-table-column>
-                    <el-table-column prop="launch_mass" label="launch_mass" width="150"></el-table-column>
-                    <el-table-column prop="dry_mass" label="dry_mass" width="150"></el-table-column>
-                    <el-table-column prop="power" label="power" width="150"></el-table-column>
-                    <el-table-column prop="launch_date" label="launch_date" width="150"></el-table-column>
-                    <el-table-column prop="lifetime" label="lifetime" width="150"></el-table-column>
-                    <el-table-column prop="contractor" label="contractor" width="150"></el-table-column>
-                    <el-table-column prop="contractor_country" label="contractor_country" width="150"></el-table-column>
-                    <el-table-column prop="launch_site" label="launch_site" width="150"></el-table-column>
-                    <el-table-column prop="launch_vehicle" label="launch_vehicle" width="150"></el-table-column>
-                    <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
-                    <el-table-column prop="norad" label="norad" width="150"></el-table-column>
-                    <el-table-column prop="comments" label="comments" width="150"></el-table-column>
-                    <el-table-column prop="orbital_data_source" label="orbital_data_source" width="150"></el-table-column>
-                    <el-table-column prop="source1" label="source1" width="150"></el-table-column>
-                    <el-table-column prop="data_status" label="data_status" width="150"></el-table-column>
-                    <el-table-column fixed="right" prop="removal_reason" label="Removal Reason"
-                        width="200"></el-table-column>
+                <el-table :data="tableData" style="width: 100%">
+                    <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
+                    <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
+                    <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
+                    </el-table-column>
+                    <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+                    <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column"
+                        width="350">
+                    </el-table-column>
+                    <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
+                    <el-table-column fixed="right" prop="removal_reason" label="Reason" width="200"></el-table-column>
                 </el-table>
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="showJCATModal = false">Close</el-button>
@@ -127,9 +111,12 @@ export default {
             asideWidth: "200px",
             historyData: [],
             showJCATModal: false,
-            jcatDetails: [],
             searchQuery: '',
             username: '',
+            tableData: [],
+            columns: [], // This now includes all columns
+            dynamicColumns: [],
+            editColumns: []
         };
     },
     mounted() {
@@ -141,7 +128,7 @@ export default {
         filteredData() {
             if (this.searchQuery) {
                 return this.historyData.filter(item =>
-                    item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
                 );
             }
             return this.historyData;
@@ -170,10 +157,21 @@ export default {
         },
         async showDetails(row) {
             try {
-                const url = `http://localhost:8000/api/history/details?satellite_name=${encodeURIComponent(row.satellite_name)}`;
-                const response = await axios.get(url);  // Fetch data from the API
-                this.jcatDetails = response.data;       // Set the JCAT details to a data property
-                this.showJCATModal = true;              // Open the modal
+                const url = `http://localhost:8000/api/history/details?cospar=${encodeURIComponent(row.cospar)}`;
+                const response = await axios.get(url);  // Add this line to make the API call
+                this.tableData = response.data;
+
+                if (this.tableData.length > 0) {
+                    const allColumns = Object.keys(this.tableData[0]);
+                    this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+                    this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'removal_reason'];
+
+                    this.editColumns = allColumns.filter(col =>
+                        !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+                    );
+                    console.log(this.editColumns);
+                }
+                this.showJCATModal = true; // Open the modal
             } catch (error) {
                 console.error("There was an error fetching the JCAT details:", error);
             }
@@ -260,6 +258,10 @@ export default {
     box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
     display: flex;
     align-items: center;
+}
+
+.no-transition-submenu .el-menu--collapse {
+    transition: none !important;
 }
 </style>
 

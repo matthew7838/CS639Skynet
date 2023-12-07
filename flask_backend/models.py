@@ -70,12 +70,152 @@ class Satellite(db.Model):
             'source1': self.source1,
             'data_status': self.data_status
         }
+    
+#new launches
+class Satellite_New(db.Model):
+    __tablename__ = 'ucs_table'
+
+    full_name = db.Column(db.String(255))
+    official_name = db.Column(db.String(255))
+    country = db.Column(db.String(255))
+    owner_country = db.Column(db.String(255))
+    owner = db.Column(db.String(255))
+    users = db.Column(db.String(255))
+    purpose = db.Column(db.String(255))
+    detail_purpose = db.Column(db.String(255))
+    orbit_class = db.Column(db.String(255))
+    orbit_type = db.Column(db.String(255))
+    in_geo = db.Column(db.Integer)
+    perigee = db.Column(db.Integer)
+    apogee = db.Column(db.Integer)
+    eccentricity = db.Column(db.String(255))
+    inclination = db.Column(db.Float)
+    period = db.Column(db.String(255))
+    mass = db.Column(db.Float)
+    dry_mass = db.Column(db.Float)
+    power = db.Column(db.String(255))
+    launch_date = db.Column(db.DateTime)
+    expected_lifetime = db.Column(db.String(255))
+    contractor = db.Column(db.String(255))
+    contractor_country = db.Column(db.String(255))
+    launch_site = db.Column(db.String(255))
+    launch_vehicle = db.Column(db.String(255))
+    cospar = db.Column(db.String(255), primary_key=True)
+    norad = db.Column(db.Integer)
+    source = db.Column(db.String(255))
+    additional_source = db.Column(db.String(255))
+    data_status = db.Column(db.Integer)
+    
+    def to_dict(self):
+        return {
+            'full_name': self.full_name,
+            'official_name': self.official_name,
+            'owner_country': self.owner_country,
+            'orbit_class': self.orbit_class,
+            'country': self.country,
+            'owner': self.owner,
+            'users': self.users,
+            'purpose': self.purpose,
+            'detail_purpose': self.detail_purpose,
+            'orbit_class': self.orbit_class,
+            'orbit_type': self.orbit_type,
+            'in_geo': self.in_geo,
+            'perigee': self.perigee,
+            'apogee': self.apogee,
+            'eccentricity': self.eccentricity,
+            'inclination': self.inclination,
+            'period': self.period,
+            'mass': self.mass,
+            'dry_mass': self.dry_mass,
+            'power': self.power,
+            'launch_date': self.launch_date,
+            'expected_lifetime': self.expected_lifetime,
+            'contractor': self.contractor,
+            'contractor_country': self.contractor_country,
+            'launch_site': self.launch_site,
+            'launch_vehicle': self.launch_vehicle,
+            'cospar': self.cospar,
+            'norad': self.norad,
+            'source': self.source,
+            'additional_source': self.additional_source,
+            'data_status': self.data_status
+        }
+    
+#ucs_master_dataset
+class Satellite_Master(db.Model):
+    __tablename__ = 'ucs_master'
+
+    full_name = db.Column(db.String(255))
+    official_name = db.Column(db.String(255))
+    country = db.Column(db.String(255))
+    owner_country = db.Column(db.String(255))
+    owner = db.Column(db.String(255))
+    users = db.Column(db.String(255))
+    purpose = db.Column(db.String(255))
+    detail_purpose = db.Column(db.String(255))
+    orbit_class = db.Column(db.String(255))
+    orbit_type = db.Column(db.String(255))
+    in_geo = db.Column(db.String(255))
+    perigee = db.Column(db.String(255))
+    apogee = db.Column(db.String(255))
+    eccentricity = db.Column(db.String(255))
+    inclination = db.Column(db.String(255))
+    period = db.Column(db.String(255))
+    mass = db.Column(db.String(255))
+    dry_mass = db.Column(db.String(255))
+    power = db.Column(db.String(255))
+    launch_date = db.Column(db.String(255))
+    expected_lifetime = db.Column(db.String(255))
+    contractor = db.Column(db.String(255))
+    contractor_country = db.Column(db.String(255))
+    launch_site = db.Column(db.String(255))
+    launch_vehicle = db.Column(db.String(255))
+    cospar = db.Column(db.String(255), primary_key=True)
+    norad = db.Column(db.String(255))
+    data_status =  db.Column(db.Integer)
+    source = db.Column(db.String(255))
+    additional_source = db.Column(db.String(255))
+    
+    def to_dict(self):
+        return {
+            'full_name': self.full_name,
+            'official_name': self.official_name,
+            'owner_country': self.owner_country,
+            'orbit_class': self.orbit_class,
+            'country': self.country,
+            'owner': self.owner,
+            'users': self.users,
+            'purpose': self.purpose,
+            'detail_purpose': self.detail_purpose,
+            'orbit_class': self.orbit_class,
+            'orbit_type': self.orbit_type,
+            'in_geo': self.in_geo,
+            'perigee': self.perigee,
+            'apogee': self.apogee,
+            'eccentricity': self.eccentricity,
+            'inclination': self.inclination,
+            'period': self.period,
+            'mass': self.mass,
+            'dry_mass': self.dry_mass,
+            'power': self.power,
+            'launch_date': self.launch_date,
+            'expected_lifetime': self.expected_lifetime,
+            'contractor': self.contractor,
+            'contractor_country': self.contractor_country,
+            'launch_site': self.launch_site,
+            'launch_vehicle': self.launch_vehicle,
+            'cospar': self.cospar,
+            'norad': self.norad,
+            'data_status': self.data_status,
+            'source': self.source,
+            'additional_source': self.additional_source
+        }
 
 class SatelliteEditRecord(db.Model):
     __tablename__ = 'satellite_edit_records'
     
     id = db.Column(db.Integer, primary_key=True)
-    satellite_name = db.Column(db.String(255), db.ForeignKey('satellites.satellite_name'), nullable=False)
+    cospar = db.Column(db.String(255), db.ForeignKey('ucs_master.cospar'), nullable=False)
     column_name = db.Column(db.String(255), nullable=False)
     old_value = db.Column(db.Text)
     new_value = db.Column(db.Text)
@@ -85,7 +225,7 @@ class SatelliteEditRecord(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'satellite_name': self.satellite_name,
+            'cospar': self.cospar,
             'column_name': self.column_name,
             'old_value': self.old_value,
             'new_value': self.new_value,
@@ -116,14 +256,14 @@ class RecordTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     date = db.Column(db.DateTime)  # Changed to DateTime to store timestamp
-    satellite_name = db.Column(db.String(255), db.ForeignKey('satellites.satellite_name'))
+    cospar = db.Column(db.String(255), db.ForeignKey('ucs_master.cospar'))
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'date': self.date,
-            'satellite_name': self.satellite_name
+            'cospar': self.cospar
         }
 
 

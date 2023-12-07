@@ -24,6 +24,7 @@ class OrbitalfocusPipeline:
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating orbitalfocus table")
 
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
@@ -85,6 +86,8 @@ class ReentrypredictorPipeline:
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating aero table")
+
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS aero(
                          object text,
@@ -145,6 +148,8 @@ class Planet4589Pipeline:
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
+        print("creating orbitalfocus table")
+        
         # changed one of the column from primary to primry for obvious reasons
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
@@ -188,7 +193,8 @@ class Planet4589Pipeline:
                          if text,
                          oporbit text,
                          oqual text,
-                         altnames text)""") # check sdate, odate type
+                         altnames text,
+                         data_status integer)""") # check sdate, odate type
         # extra line
         #self.connection.commit()
 
@@ -216,9 +222,9 @@ class Planet4589Pipeline:
                 """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
                 ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, 
                 totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, 
-                af, inc, if, oporbit, oqual, altnames) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                af, inc, if, oporbit, oqual, altnames, data_status) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s)""",
+                %s, %s, %s, %s)""",
                 (
                     item['JCAT'],
                     item['Satcat'],
@@ -260,10 +266,145 @@ class Planet4589Pipeline:
                     item['IF'],
                     item['OpOrbit'],
                     item['OQUAL'],
-                    item['AltNames']
+                    item['AltNames'],
+                    item['data_status']
                 ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
             # print(f'Error during item processing: {e}')
+        return item
+
+class UcsdataPipeleine:
+
+    def __init__(self):
+        hostname = 'localhost'  # this will be universal
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        password = 'skynet'  # make the password 'skynet' when you create the new user
+        # database = 'skynet' # we don't need this for this to work
+
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        # changed one of the column from primary to primry for obvious reasons
+        print('creating ucs_master table')
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS ucs_master(
+                        full_name text,
+                        official_name text,
+                        country text,
+                        owner_country text,
+                        owner text,
+                        users text,
+                        purpose text,
+                        detail_purpose text,
+                        orbit_class text,
+                        orbit_type text,
+                        in_geo text,
+                        perigee text,
+                        apogee text,
+                        eccentricity text,
+                        inclination text,
+                        period text,
+                        mass text,
+                        dry_mass text,
+                        power text,
+                        launch_date text,
+                        expected_lifetime text,
+                        contractor text,
+                        contractor_country text,
+                        launch_site text,
+                        launch_vehicle text,
+                        cospar text,
+                        norad text,
+                        source text,
+                        additional_source text,
+                        data_status integer)""")
+        #self.connection.commit()
+
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+
+    def process_item(self, item, spider):
+        try:
+            #rint(item)
+            #input()
+            adapter = ItemAdapter(item)
+            field_names = adapter.field_names()
+            self.cur.execute(
+                """ insert into ucs_master (
+                    full_name,
+                    official_name,
+                    country,
+                    owner_country,
+                    owner,
+                    users,
+                    purpose,
+                    detail_purpose,
+                    orbit_class,
+                    orbit_type,
+                    in_geo,
+                    perigee,
+                    apogee,
+                    eccentricity,
+                    inclination,
+                    period,
+                    mass,
+                    dry_mass,
+                    power,
+                    launch_date,
+                    expected_lifetime,
+                    contractor,
+                    contractor_country,
+                    launch_site,
+                    launch_vehicle,
+                    cospar,
+                    norad,
+                    source,
+                    additional_source,
+                    data_status
+                ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    item['full_name'],
+                    item['official_name'],
+                    item['country'],
+                    item['owner_country'],
+                    item['owner'],
+                    item['users'],
+                    item['purpose'],
+                    item['detail_purpose'],
+                    item['orbit_class'],
+                    item['orbit_type'],
+                    item['in_geo'],
+                    item['perigee'],
+                    item['apogee'],
+                    item['eccentricity'],
+                    item['inclination'],
+                    item['period'],
+                    item['mass'],
+                    item['dry_mass'],
+                    item['power'],
+                    item['launch_date'],
+                    item['expected_lifetime'],
+                    item['contractor'],
+                    item['contractor_country'],
+                    item['launch_site'],
+                    item['launch_vehicle'],
+                    item['cospar'],
+                    item['norad'],
+                    item['source'],
+                    item['additional_source'],
+                    item['data_status']
+                ))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
         return item
