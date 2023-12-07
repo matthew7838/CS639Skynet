@@ -24,14 +24,21 @@ class Planet4589spiderSpider(scrapy.Spider):
         self.scraped_items = []
 
     def parse(self, response):
+        #set default data_status
+        default_data_status = 10
         tsv = StringIO(response.text)
         df = pd.read_csv(tsv, sep='\t', dtype=str)
         df = df.drop(0)
         df.rename(columns={"#JCAT": "JCAT"}, inplace=True)
         df = df[df['LDate'].str.startswith('2023')]
+        #change data_status = 2 for re-entered sats
+        #for sats with Status == 'R'
+        df['data_status'] = default_data_status
+        df.loc[df['Status'] == 'R', 'data_status'] = 2
         # df = df[df['Status'].str.startswith('O')]
         #print(f'length = {len(df)}')
         #print(df)
+        
         self.total_count = len(df)
         progress_bar = tqdm(total=self.total_count, desc='New Launches Scraping Progress', unit='item')
 
