@@ -4,7 +4,9 @@ import pandas as pd
 from tqdm import tqdm
 from myspider.items import UcsdataItem
 from io import BytesIO
-
+import psycopg2
+from datetime import date, datetime
+import os
 
 class UcsdataSpider(scrapy.Spider):
     name = "ucsdataspider"
@@ -22,11 +24,42 @@ class UcsdataSpider(scrapy.Spider):
         self.total_count = 0
         self.processed_count = 0
         self.scraped_items = []
+        #to access database for data_status
+        hostname = 'localhost'  # this will be universal
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        password = 'skynet'  # make the password 'skynet' when you create the new user
+        # database = 'skynet' # we don't need this for this to work
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+
+    #helper to retrieve reentry_sats
+    def gather_reentry_sats(self):
+        try:
+            table_name = 'aero'
+            column_name = 'cospar_num'
+            query_r = f'SELECT {column_name} from {table_name}'
+            self.cur.execute(query=query_r)
+            self.connection.commit()
+            rows = self.cur.fetchall()
+            result_list = [list(row) for row in rows]
+            cospar_list = []
+            for row in result_list:
+                cospar_list.append(row[0].strip())
+        except Exception as e:
+            print(f'Exception: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+        #print(cospar_list)
+        #input()
+        return cospar_list
 
     def parse(self, response):
+        #default data status
+        default_data_status = 10
         excel_url = response.css('.column-section .main-region ul li a').attrib['href']
         excel_url = f'https://ucsusa.org{excel_url}'
-        print(excel_url)
+        print(f'URL for UCS Dataset: {excel_url}'))
         response = requests.get(excel_url)
         excel_content = BytesIO(response.content)
         df = pd.read_excel(excel_content)
@@ -102,7 +135,22 @@ class UcsdataSpider(scrapy.Spider):
             'Source.1': 'additional_source',
         }
         df.rename(columns=column_dic, inplace=True)
-
+        #set default_data_status for every sat, this will change
+        #when we get re_entry sats etc.
+        df['data_status'] = default_data_status
+        #get rows which have conflicting cospar duplicates
+        #and set data_status = 5 for them
+        duplicate_rows = df[df.duplicated(subset='cospar', keep=False)]
+        df.loc[duplicate_rows.index, 'data_status'] = 5
+        #access aero to gather reentry satellites's cospar
+        #change data_status = 2 for re-entered sats
+        cospar_list = self.gather_reentry_sats()
+        df.loc[df['cospar'].isin(cospar_list), 'data_status'] = 2
+        filtered_df_cospar = df[df['data_status'] == 2]
+        filtered_df_dupes = df[df['data_status'] == 5]
+        #print(filtered_df_cospar)
+        #input()
+        #print(filtered_df_dupes)
         self.total_count = len(df)
         progress_bar = tqdm(total=self.total_count, desc='Latest UCS Excel Scraping Progress', unit='item')
 
