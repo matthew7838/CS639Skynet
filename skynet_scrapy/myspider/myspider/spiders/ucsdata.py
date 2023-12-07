@@ -63,6 +63,8 @@ class UcsdataSpider(scrapy.Spider):
         response = requests.get(excel_url)
         excel_content = BytesIO(response.content)
         df = pd.read_excel(excel_content)
+        #clean up messy UCS entries.
+        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
         df = df.drop(['Comments', 
                       'Unnamed: 28', 
                       'Source Used for Orbital Data',
