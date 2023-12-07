@@ -104,6 +104,7 @@ class Satellite_New(db.Model):
     norad = db.Column(db.Integer)
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
+    data_status = db.Column(db.Integer)
     
     def to_dict(self):
         return {
@@ -136,7 +137,8 @@ class Satellite_New(db.Model):
             'cospar': self.cospar,
             'norad': self.norad,
             'source': self.source,
-            'additional_source': self.additional_source
+            'additional_source': self.additional_source,
+            'data_status': self.data_status
         }
     
 #ucs_master_dataset
