@@ -59,7 +59,7 @@ class UcsdataSpider(scrapy.Spider):
         default_data_status = 10
         excel_url = response.css('.column-section .main-region ul li a').attrib['href']
         excel_url = f'https://ucsusa.org{excel_url}'
-        print(f'URL for UCS Dataset: {excel_url}'))
+        print(f'URL for UCS Dataset: {excel_url}')
         response = requests.get(excel_url)
         excel_content = BytesIO(response.content)
         df = pd.read_excel(excel_content)
