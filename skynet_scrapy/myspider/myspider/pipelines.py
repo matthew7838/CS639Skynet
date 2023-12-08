@@ -542,3 +542,71 @@ class NtwoYOPipeline:
             self.connection.rollback()
             print(f'Error during item processing: {e}')
         return item
+
+class NanoSatsPipeline:
+    # this class is for https://www.nanosats.eu/database
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS nanosats(
+                         NAME text,
+                         Type text,
+                         Units text,
+                         Status text,
+                         Launched text,
+                         NORAD text,
+                         Deployer text,
+                         Launcher text,
+                         Organization text,
+                         Institution text,
+                         Entity text,
+                         Nation text,
+                         Launch_Brokerer text,
+                         Partners text,
+                         Oneliner text,
+                         Description text)""")
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+
+
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("""INSERT INTO nanosats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (
+                                item["Name"],
+                                item["Type"],
+                                item["Units"],
+                                item["Status"],
+                                item["Launched"],
+                                item["NORAD"],
+                                item["Deployer"],
+                                item["Launcher"],
+                                item["Organisation"],
+                                item["Institution"],
+                                item["Entity"],
+                                item["Nation"],
+                                item["Launch_Brokerer"],
+                                item["Partners"],
+                                item["Oneliner"],
+                                item["Description"]
+                            ))
+            self.connection.commit()
+            # print("values inserted:" + item["NORAD"] + " " + item["Period"])
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
+        return item
