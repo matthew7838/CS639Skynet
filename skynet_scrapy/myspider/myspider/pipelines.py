@@ -507,3 +507,38 @@ class UcsdataPipeleine:
             self.connection.rollback()
             print(f'Error during item processing: {e}')
         return item
+
+class NtwoYOPipeline:
+    # this class is for https://www.n2yo.com/database/?q=#results
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS period(
+                         NORAD text,
+                         Period text)""")
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+    
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("INSERT INTO period (NORAD, Period) VALUES (%s, %s)", (item["NORAD"], item["Period"]))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
+        return item
