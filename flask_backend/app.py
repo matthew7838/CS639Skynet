@@ -120,17 +120,36 @@ def get_satellites():
 @app.route('/api/satellites_new', methods=['GET'])
 def get_satellites_new():
     try:
-        # Query the skynet_satellites table
-        results = Satellite_New.query.filter().all()
+        # Pagination parameters
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 100, type=int)
+        offset = (page - 1) * limit
 
-        # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
+        # Search query parameter
+        search_query = request.args.get('search', '', type=str)
 
-        return jsonify(data)
+        # Query with optional filtering
+        query = Satellite_New.query
+        if search_query:
+            query = query.filter(func.lower(Satellite_New.cospar).like(f'%{search_query.lower()}%'))  # Example for filtering by name
+
+        # Get total count after filtering
+        total_count = query.count()
+
+        # Apply pagination
+        results = query.offset(offset).limit(limit).all()
+
+        # Convert data to dict
+        data = [row.to_dict() for row in results]
+
+        return jsonify({
+            'data': data,
+            'total_count': total_count
+        })
+
     except Exception as e:
-        # Log the exception for debugging purposes
         print("Error:", e)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
     
 #master_dataset
 @app.route('/api/satellites_master', methods=['GET'])

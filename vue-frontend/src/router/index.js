@@ -37,7 +37,12 @@ const routes = [
     {
         path: '/crawler',
         name: 'Crawler',
-        component: () => import('../views/crawler.vue')
+        component: () => import('../views/new_satellites/crawler.vue')
+    },
+    {
+        path: '/new_satellites_pending',
+        name: 'Pending',
+        component: () => import('../views/new_satellites/new_satellites_pending.vue')
     }
 ]
 

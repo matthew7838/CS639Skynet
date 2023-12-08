@@ -16,6 +16,7 @@
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
           text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
           :default-active="$route.path">
+          <!-- Master Database Submenu -->
           <el-submenu index="1">
             <template slot="title">
               <i class="el-icon-menu"></i>
@@ -38,15 +39,29 @@
               History
             </el-menu-item>
           </el-submenu>
-          <el-menu-item index="/crawler">
-            <i class="el-icon-search"></i>
-            <span slot="title">Crawler</span>
-          </el-menu-item>
+          <el-submenu index="2">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>New Satellites</span>
+            </template>
+            <el-menu-item index="/crawler">
+              <i class="el-icon-house"></i>
+              Crawler Page
+            </el-menu-item>
+            <el-menu-item index="/new_satellites_pending">
+              <i class="el-icon-edit"></i>
+              Pending Page
+            </el-menu-item>
+            <el-menu-item index="/new_satellites_record">
+              <i class="el-icon-delete"></i>
+              Record Page
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
           </el-menu-item>
-          
+
         </el-menu>
       </el-aside>
 

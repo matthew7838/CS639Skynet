@@ -73,7 +73,7 @@ class Satellite(db.Model):
     
 #new launches
 class Satellite_New(db.Model):
-    __tablename__ = 'ucs_table'
+    __tablename__ = 'ucs_new_launches'
 
     full_name = db.Column(db.String(255))
     official_name = db.Column(db.String(255))
