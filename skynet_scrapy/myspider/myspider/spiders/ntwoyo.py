@@ -37,7 +37,7 @@ class NtwoYOSpider(scrapy.Spider):
         base_url = "https://www.n2yo.com/satellite/?s="
 
         for norad in self.cur:
-            url = base_url + norad[0]
+            url = base_url + str(norad[0])
             # print(url)
             yield Request(url)
 
