@@ -107,3 +107,21 @@ class UcsdataItem(scrapy.Item):
 class NtwoYOItem(scrapy.Item):
     NORAD = scrapy.Field()
     Period = scrapy.Field()
+
+class NanoSatsItem(scrapy.Item):
+    Name = scrapy.Field()
+    Type = scrapy.Field()
+    Units = scrapy.Field()
+    Status = scrapy.Field()
+    Launched = scrapy.Field()
+    NORAD = scrapy.Field()
+    Deployer = scrapy.Field()
+    Launcher = scrapy.Field()
+    Organisation = scrapy.Field()
+    Institution = scrapy.Field()
+    Entity = scrapy.Field()
+    Nation = scrapy.Field()
+    Launch_Brokerer = scrapy.Field()
+    Partners = scrapy.Field()
+    Oneliner = scrapy.Field()
+    Description = scrapy.Field()
