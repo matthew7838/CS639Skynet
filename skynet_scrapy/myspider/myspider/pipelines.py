@@ -605,7 +605,59 @@ class NanoSatsPipeline:
                                 item["Description"]
                             ))
             self.connection.commit()
-            # print("values inserted:" + item["NORAD"] + " " + item["Period"])
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
+        return item
+    
+class TheSpaceReportPipeline:
+    # this class is for https://www.thespacereport.org/resources/launch-log-2023/
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS data_spacereport (
+                         LaunchID text,
+                         DateTime text,
+                         LaunchVehicle text,
+                         OperatorCountry text,
+                         LaunchSite text,
+                         Status text,
+                         MissionSector text,
+                         Crewed text,
+                         FirstStageRecovery text)
+                         """)
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("""INSERT INTO data_spacereport VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (
+                                item["LaunchID"],
+                                item["DateTime"],
+                                item["LaunchVehicle"],
+                                item["OperatorCountry"],
+                                item["LaunchSite"],
+                                item["Status"],
+                                item["MissionSector"],
+                                item["Crewed"],
+                                item["FirstStageRecovery"]
+                            ))
+            self.connection.commit()
         except Exception as e:
             self.connection.rollback()
             print(f'Error during item processing: {e}')
