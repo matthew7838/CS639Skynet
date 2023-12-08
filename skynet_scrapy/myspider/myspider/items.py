@@ -125,3 +125,14 @@ class NanoSatsItem(scrapy.Item):
     Partners = scrapy.Field()
     Oneliner = scrapy.Field()
     Description = scrapy.Field()
+
+class TheSpaceReportItem(scrapy.Item):
+    LaunchID = scrapy.Field()
+    DateTime = scrapy.Field()
+    LaunchVehicle = scrapy.Field()
+    OperatorCountry = scrapy.Field()
+    LaunchSite = scrapy.Field()
+    Status = scrapy.Field()
+    MissionSector = scrapy.Field()
+    Crewed = scrapy.Field()
+    FirstStageRecovery = scrapy.Field()
