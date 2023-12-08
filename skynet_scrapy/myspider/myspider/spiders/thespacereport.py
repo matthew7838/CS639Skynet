@@ -14,7 +14,7 @@ import os
 import re
 import time
 
-class NanoSatsSpider(scrapy.Spider):
+class TheSpaceReportSpider(scrapy.Spider):
 
     name = "thespacereportspider"
     # allowed_domains = ["thespacereport.org"]
