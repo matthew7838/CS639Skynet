@@ -103,3 +103,7 @@ class UcsdataItem(scrapy.Item):
     source = scrapy.Field()
     additional_source = scrapy.Field()
     data_status = scrapy.Field()
+
+class NtwoYOItem(scrapy.Item):
+    NORAD = scrapy.Field()
+    Period = scrapy.Field()
