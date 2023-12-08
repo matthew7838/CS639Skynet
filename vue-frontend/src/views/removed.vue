@@ -39,6 +39,10 @@
               History
             </el-menu-item>
           </el-submenu>
+          <el-menu-item index="/ucs_removed">
+              <i class="el-icon-time"></i>
+              UCS Removed
+          </el-menu-item>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -67,8 +71,8 @@
         <!--        Main Page-->
         <el-main>
           <el-table :data="filteredData" style="width: 100%">
-            <el-table-column fixed prop="full_name" label="full_name" width="250"></el-table-column>
-            <el-table-column fixed prop="official_name" label="official_name" width="150"></el-table-column>
+            <el-table-column fixed prop="full_name" label="full_name" width="200"></el-table-column>
+            <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
             <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
             </el-table-column>
             <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>

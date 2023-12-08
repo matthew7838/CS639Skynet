@@ -38,6 +38,10 @@
                         History
                     </el-menu-item>
                 </el-submenu>
+                <el-menu-item index="/ucs_removed">
+                    <i class="el-icon-time"></i>
+                    UCS Removed
+                </el-menu-item>
                 <el-menu-item @click="logout">
                     <i class="el-icon-switch-button"></i>
                     <span slot="title">Logout</span>

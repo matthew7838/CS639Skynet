@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord
+from models import db, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord, Satellite_Removed
 from functools import wraps
 import os
 import traceback
@@ -99,38 +99,6 @@ def protected_route():
     return 'This is a protected route.'
 
 
-@app.route('/api/satellites', methods=['GET'])
-def get_satellites():
-    try:
-        # Query the skynet_satellites table
-        results = Satellite.query.filter(Satellite.data_status != 2).all()
-
-        # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
-
-        return jsonify(data)
-    except Exception as e:
-        # Log the exception for debugging purposes
-        print("Error:", e)
-        return jsonify({"error": str(e)}), 500
-
-#NEW_LAUNCHES
-@app.route('/api/satellites_new', methods=['GET'])
-def get_satellites_new():
-    try:
-        # Query the skynet_satellites table
-        results = Satellite_New.query.filter().all()
-
-        # Serialize the results into a list of dictionaries
-        data = [row.to_dict() for row in results]  # Make sure this method exists in your model
-
-        return jsonify(data)
-    except Exception as e:
-        # Log the exception for debugging purposes
-        print("Error:", e)
-        return jsonify({"error": str(e)}), 500
-    
-#master_dataset
 @app.route('/api/satellites_master', methods=['GET'])
 def get_satellites_master():
     try:
@@ -143,7 +111,7 @@ def get_satellites_master():
         search_query = request.args.get('search', '', type=str)
 
         # Query with optional filtering
-        query = Satellite_Master.query
+        query = Satellite_Master.query.filter(Satellite_Master.data_status != 3)
         if search_query:
             query = query.filter(func.lower(Satellite_Master.cospar).like(f'%{search_query.lower()}%'))  # Example for filtering by name
 
@@ -204,28 +172,38 @@ def update_status():
 
     try:
         for cospar in cospar_list:
-            # Update the SkynetSatellite table
+            # Fetch the satellite to be removed
             satellite = Satellite_Master.query.filter_by(cospar=cospar).first()
             if satellite:
-                satellite.data_status = 4
-                db.session.add(satellite)
+                # Fetch the removal reason
+                removal_record = SatelliteRemovalRecord.query.filter_by(cospar=cospar).first()
+                removal_reason = removal_record.reason if removal_record else "Unknown"
 
-                # Debug print
-                print(f"Updating satellite: {satellite}")
+                # Add to Satellite_Removed
+                removed_satellite = Satellite_Removed(
+                    **satellite.to_dict(),  # assuming to_dict() method converts the satellite object to a dictionary
+                    remove_source='ucs_master',
+                    remove_reason=removal_reason
+                )
+                db.session.add(removed_satellite)
+
+                # Delete from Satellite_Master
+                db.session.delete(satellite)
 
                 # Insert a record into the RecordTable
                 new_record = RecordTable(name=name, date=current_date, cospar=cospar)
                 db.session.add(new_record)
 
                 # Debug print
-                print(f"Adding record for: {satellite}")
+                print(f"Removed satellite {cospar} and added to Satellite_Removed")
 
         db.session.commit()
-        return jsonify({"message": "Status updated and record added successfully"}), 200
+        return jsonify({"message": "Satellite removed, status updated, and record added successfully"}), 200
     except Exception as e:
         db.session.rollback()
         print(f"Exception occurred: {e}")  # Debug print
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/api/history', methods=['GET'])
