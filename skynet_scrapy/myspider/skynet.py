@@ -1,6 +1,9 @@
 from myspider.spiders.orbitalfocusspider import OrbitalfocusspiderSpider
 from myspider.spiders.planet4589 import Planet4589spiderSpider
 from myspider.spiders.reentrypredictor import ReentrypredictorSpider
+from myspider.spiders.ntwoyo import NtwoYOSpider
+from myspider.spiders.nanosats import NanoSatsSpider
+from myspider.spiders.thespacereport import TheSpaceReportSpider
 from myspider.spiders.ucsdata import UcsdataSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -46,6 +49,9 @@ def main():
         ReentrypredictorSpider,
         OrbitalfocusspiderSpider,
         UcsdataSpider,
+        NtwoYOSpider,
+        NanoSatsSpider,
+        TheSpaceReportSpider,
     ]
     
     settings = get_project_settings()
