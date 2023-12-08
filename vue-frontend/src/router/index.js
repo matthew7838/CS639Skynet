@@ -35,6 +35,11 @@ const routes = [
         component: () => import('../views/Register.vue')
     },
     {
+        path: '/ucs_removed',
+        name: 'UCS Removed',
+        component: () => import('../views/ucs_removed.vue')
+    },
+    {
         path: '/crawler',
         name: 'Crawler',
         component: () => import('../views/new_satellites/crawler.vue')

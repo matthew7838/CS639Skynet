@@ -7,9 +7,9 @@ load_dotenv()
 class Gatherer:
 
     def __init__(self):
-        hostname = os.getenv('DB_HOST') # this will be universal
-        username = os.getenv('DB_USER') # create a new user with name: 'skynetapp'
-        password = os.getenv('DB_PASSWORD') # make the password 'skynet' when you create the new user
+        hostname = 'localhost'  # this will be universal
+        username = 'postgres'  # create a new user with name: 'skynetapp'
+        password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
