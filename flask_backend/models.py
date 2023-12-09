@@ -145,7 +145,7 @@ class Satellite_Master(db.Model):
     
 class Satellite_Removed(db.Model):
     __tablename__ = 'ucs_removed_satellites'
-
+    id = db.Column(db.Integer, primary_key=True)
     # Inheriting columns from Satellite_Master
     full_name = db.Column(db.String(255))
     official_name = db.Column(db.String(255))
@@ -172,7 +172,7 @@ class Satellite_Removed(db.Model):
     contractor_country = db.Column(db.String(255))
     launch_site = db.Column(db.String(255))
     launch_vehicle = db.Column(db.String(255))
-    cospar = db.Column(db.String(255), primary_key=True)
+    cospar = db.Column(db.String(255))
     norad = db.Column(db.String(255))
     data_status =  db.Column(db.Integer)
     source = db.Column(db.String(255))
@@ -184,6 +184,7 @@ class Satellite_Removed(db.Model):
 
     def to_dict(self):
         return {
+            'id': self.id,
             'full_name': self.full_name,
             'official_name': self.official_name,
             'owner_country': self.owner_country,
@@ -220,11 +221,33 @@ class Satellite_Removed(db.Model):
         }
 
 
-class SatelliteEditRecord(db.Model):
-    __tablename__ = 'satellite_edit_records'
+class Master_Edit_Record(db.Model):
+    __tablename__ = 'master_edit_records'
     
     id = db.Column(db.Integer, primary_key=True)
     cospar = db.Column(db.String(255), db.ForeignKey('ucs_master.cospar'), nullable=False)
+    column_name = db.Column(db.String(255), nullable=False)
+    old_value = db.Column(db.Text)
+    new_value = db.Column(db.Text)
+    edited_by = db.Column(db.String(255))
+    edit_time = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'cospar': self.cospar,
+            'column_name': self.column_name,
+            'old_value': self.old_value,
+            'new_value': self.new_value,
+            'edited_by': self.edited_by,
+            'edit_time': self.edit_time.strftime('%Y-%m-%d %H:%M:%S') if self.edit_time else None
+        }
+    
+class New_Edit_Record(db.Model):
+    __tablename__ = 'new_edit_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cospar = db.Column(db.String(255), db.ForeignKey('ucs_new_launches.cospar'), nullable=False)
     column_name = db.Column(db.String(255), nullable=False)
     old_value = db.Column(db.Text)
     new_value = db.Column(db.Text)
@@ -273,6 +296,29 @@ class RecordTable(db.Model):
             'name': self.name,
             'date': self.date,
             'cospar': self.cospar
+        }
+    
+class ApproveDenyTable(db.Model):
+    __tablename__ = 'approve_deny_table'
+
+    # Primary key
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Other columns
+    cospar = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    action = db.Column(db.String(255))
+    reason = db.Column(db.String(255))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cospar": self.cospar,
+            "name": self.name,
+            "date": self.date,
+            "action": self.action,
+            "reason": self.reason
         }
 
 
