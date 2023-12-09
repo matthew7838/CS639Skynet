@@ -28,6 +28,10 @@
             <i class="el-icon-delete"></i>
             <span slot="title">Removed</span>
           </el-menu-item>
+          <el-menu-item index="/version">
+            <i class="el-icon-time"></i>
+            <span slot="title">Version Control</span>
+          </el-menu-item>
           <el-menu-item index="/history">
             <i class="el-icon-time"></i>
             <span slot="title">History</span>

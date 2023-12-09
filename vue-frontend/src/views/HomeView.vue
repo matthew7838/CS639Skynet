@@ -28,6 +28,10 @@
             <i class="el-icon-delete"></i>
             <span slot="title">Removed</span>
           </el-menu-item>
+          <el-menu-item index="/version">
+            <i class="el-icon-time"></i>
+            <span slot="title">Version Control</span>
+          </el-menu-item>
           <el-menu-item index="/history">
             <i class="el-icon-time"></i>
             <span slot="title">History</span>
@@ -299,8 +303,8 @@ export default {
       this.otherReason = '';
     },
     logout() {
-      localStorage.removeItem('authToken'); // 清除本地存储中的 token
-      this.$router.push('/login'); // 重定向到登录页面
+      localStorage.removeItem('authToken');
+      this.$router.push('/login');
     },
     getUsername() {
       // Retrieve the username from local storage

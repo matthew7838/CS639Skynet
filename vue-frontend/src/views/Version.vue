@@ -50,7 +50,7 @@
           <el-breadcrumb style="margin-left: 20px">
             <el-breadcrumb-item>Welcome, {{ username }}!</el-breadcrumb-item>
           </el-breadcrumb>
-          
+
           <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
           <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
             <el-breadcrumb-item :to="{ path: '/' }">Edit Page</el-breadcrumb-item>
@@ -63,22 +63,28 @@
 
         <!--        Main Page-->
         <el-main>
-          <el-table :data="filteredData" style="width: 100%">
-            <el-table-column fixed prop="satellite_name" label="satellite_name"></el-table-column>
-            <el-table-column prop="column_name" label="Column Name"></el-table-column>
-            <el-table-column prop="old_value" label="Old Value"></el-table-column>
-            <el-table-column prop="new_value" label="New Value"></el-table-column>
-            <el-table-column prop="edited_by" label="Edited By"></el-table-column>
-            <el-table-column prop="edit_time" label="Edit Time"></el-table-column>
+          <el-table :data="versionData" style="width: 100%">
+            <el-table-column prop="version" label="Version"></el-table-column>
+            <el-table-column prop="timestamp" label="Timestamp"></el-table-column>
+            <el-table-column
+              label="Operations"
+              width="180">
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  @click="rollbackVersion(scope.row)">Rollback</el-button>
+              </template>
+            </el-table-column>
           </el-table>
         </el-main>
+
 
       </el-container>
 
     </el-container>
   </div>
 </template>
-  
+
 <script>
 import axios from "axios";
 export default {
@@ -99,7 +105,7 @@ export default {
     // Add a computed property for filtering data
     filteredData() {
       if (this.searchQuery) {
-        return this.tableData.filter(item => 
+        return this.tableData.filter(item =>
           item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
@@ -131,7 +137,7 @@ export default {
   }
 };
 </script>
-  
+
 <style>
 .el-table {
   margin-top: 20px;
@@ -235,4 +241,3 @@ export default {
   margin-left: 0px;
 }
 </style>
-  
