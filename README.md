@@ -9,11 +9,15 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 - Python
 - Vue
 - Electron
-- Scrapy (Web scraping techniques)】
+- Scrapy (Web scraping techniques)
 
 ## Setup
-There might be some formatting issues when running the program on a Windows machine, it is strongly recommand to run 
-this program on a **macOS** or **Linux** environment.
+There might be some formatting issues when running the program on a Windows machine, it is **strongly recommended** to 
+run this program on a **macOS** or **Linux** environment.
+
+**Note:** If it's necessary to run on a Windows environment, please look into 
+`./skynet_scrapy/myspider/myspider/pipelines.py` and switch every line of `value = parsed_date.strftime('%-m/%-d/%y')` 
+to `value = parsed_date.strftime('%m/%d/%y')`.
 ```bash
 # installing virtual environment (recommended, not required), may need --user flag
 py -m pip install --user virtualenv
