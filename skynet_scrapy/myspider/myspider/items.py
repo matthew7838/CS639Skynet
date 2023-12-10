@@ -139,3 +139,8 @@ class TheSpaceReportItem(scrapy.Item):
     MissionSector = scrapy.Field()
     Crewed = scrapy.Field()
     FirstStageRecovery = scrapy.Field()
+
+class UNoosaItem(scrapy.Item):
+    COSPAR = scrapy.Field()
+    State = scrapy.Field()
+    UNRegistered = scrapy.Field()
