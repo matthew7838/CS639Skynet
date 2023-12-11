@@ -15,9 +15,10 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 There might be some formatting issues when running the program on a Windows machine, it is **strongly recommended** to 
 run this program on a **macOS** or **Linux** environment.
 
-**Note:** If it's necessary to run on a Windows environment, please look into 
-`./skynet_scrapy/myspider/myspider/pipelines.py` and switch every line of `value = parsed_date.strftime('%-m/%-d/%y')` 
+**Note:** If it's necessary to run on a Windows environment, there will be things needed to be modified in the codebase.
+1. Look into `./skynet_scrapy/myspider/myspider/pipelines.py` and switch every line of `value = parsed_date.strftime('%-m/%-d/%y')` 
 to `value = parsed_date.strftime('%m/%d/%y')`.
+2. Look into `./skynet_scrapy/myspider/myspider/spiders/thespacereport.py` and modify the `service = Service(executable_path="chromium.chromedriver")` line. Change the `executable_path` to specify the path to chromedriver.exe driver that's downloaded on the machine. An example, `executable_path=r"C:\path\to\chromedriver.exe"`
 ```bash
 # installing virtual environment (recommended, not required), may need --user flag
 py -m pip install --user virtualenv
