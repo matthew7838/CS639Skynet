@@ -7,6 +7,7 @@ from io import BytesIO
 import psycopg2
 from datetime import date, datetime
 import os
+import re
 
 class UcsdataSpider(scrapy.Spider):
     name = "ucsdataspider"
@@ -137,6 +138,7 @@ class UcsdataSpider(scrapy.Spider):
             'Source.1': 'additional_source',
         }
         df.rename(columns=column_dic, inplace=True)
+        df['launch_date'] = df['launch_date'].apply(lambda x: re.search(r'\d{4}-\d{2}-\d{2}', str(x)).group() if re.search(r'\d{4}-\d{2}-\d{2}', str(x)) else None)
         #set default_data_status for every sat, this will change
         #when we get re_entry sats etc.
         df['data_status'] = default_data_status
