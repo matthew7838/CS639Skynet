@@ -34,12 +34,16 @@ class NanoSatsSpider(scrapy.Spider):
         table = soup.find('table')
 
         for tr in table.findAll("tr"):
-            td = tr.find("td")
+            td = tr.findAll("td")
             try:
-                relative_link = td.find('a')['href'] # maybe only for operational ones after fixing
-                link = base_url + relative_link
-                # print(link)
-                yield Request(link)
+                #td_date = td[4].text
+                td_year = datetime.strptime(td[4].text.strip(), '%Y-%m-%d').year # this will be an int
+                if td_year == int(date.today().strftime('%Y')):
+                    #print(td_year)
+                    #input()
+                    relative_link = td[0].find('a')['href'] # maybe only for operational ones after fixing
+                    link = base_url + relative_link
+                    yield Request(link)
             except:
                 continue
 
@@ -65,12 +69,16 @@ class NanoSatsSpider(scrapy.Spider):
             adapter[field_name] = data.get(field_name) # none gets converted to null
 
         # seperate assignment due to name mis-match
-        adapter["Units"] = data.get("Units or mass")
-        adapter["NORAD"] = data.get("NORAD ID")
-        adapter["Launch_Brokerer"] = data.get("Launch brokerer")
+        if data.get('NORAD ID') is not None:
+            norad_id = re.search(r'^[0-9]{5}$', data.get('NORAD ID'))[0]
+            print(f'noradID: {norad_id}')
+            adapter["Units"] = data.get("Units or mass")
+            if norad_id:
+                adapter["NORAD"] = norad_id
+            adapter["Launch_Brokerer"] = data.get("Launch brokerer")
 
-        yield nanosatsitem
-        self.scraped_items.append(nanosatsitem)        
+            yield nanosatsitem
+            self.scraped_items.append(nanosatsitem)        
 
     def closed(self, reason):
         current_datetime = datetime.now().strftime('%m-%d-%Y_%H-%M-%S')
