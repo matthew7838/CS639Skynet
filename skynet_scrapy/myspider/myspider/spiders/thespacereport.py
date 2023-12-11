@@ -37,9 +37,10 @@ class TheSpaceReportSpider(scrapy.Spider):
 
         ### path to chromedriver
         ### 1. either have an executable in the same directory as in the next line
-        #service = Service(executable_path="chromedriver")
+        #service = Service(executable_path="chromium.chromedriver") - for linux mostly
+        #service = Service(executable_path="chromedriver") - for mac, probably will work on every platform
         ### 2. or place the executable in your path as in the next line
-        service = Service(executable_path="chromium.chromedriver")
+        service = Service(executable_path='/usr/local/bin/chromedriver')
 
         options.add_argument('--disable-dev-shm-usage')
         self.driver = webdriver.Chrome(options=options, service=service)
