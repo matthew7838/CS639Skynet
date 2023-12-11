@@ -9,13 +9,14 @@ from itemadapter import ItemAdapter
 import pandas as pd
 from datetime import datetime
 import psycopg2
+from psycopg2 import IntegrityError
 
 
 class OrbitalfocusPipeline:
 
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
@@ -25,7 +26,7 @@ class OrbitalfocusPipeline:
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
                          cat_no integer,
-                         designation text,
+                         designation text primary key,
                          name text,
                          date date)""")
         # extra line
@@ -76,7 +77,7 @@ class ReentrypredictorPipeline:
     # this class is for https://aerospace.org/reentries
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
@@ -92,7 +93,7 @@ class ReentrypredictorPipeline:
                          launch_date date,
                          predicted_reentry_date date,
                          norad_num integer,
-                         cospar_num text)""")
+                         cospar_num text primary key)""")
         # extra line
         #self.connection.commit()
 
@@ -138,20 +139,20 @@ class ReentrypredictorPipeline:
 class Planet4589Pipeline:
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
-        print("creating orbitalfocus table")
+        print("creating planet4589/SATCAT table")
         
         # changed one of the column from primary to primry for obvious reasons
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
                          jcat text,
                          satcat integer,
-                         piece text,
+                         piece text primary key,
                          type text,
                          name text,
                          plname text,
@@ -180,7 +181,7 @@ class Planet4589Pipeline:
                          span double precision,
                          spanflag text,
                          shape text,
-                         odate date,
+                         odate text,
                          perigee integer,
                          pf text,
                          apogee integer,
@@ -190,7 +191,7 @@ class Planet4589Pipeline:
                          oporbit text,
                          oqual text,
                          altnames text,
-                         data_status integer)""") # check sdate, odate type
+                         data_status integer)""") # check sdate, odate type -> changed odate to text to avoid errors while parsing planet4589.tsv
         # extra line
         #self.connection.commit()
 
@@ -275,7 +276,7 @@ class UcsdataPipeleine:
 
     def __init__(self):
         hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
+        username = 'skynetapp'  # create a new user with name: 'skynetapp'
         password = 'skynet'  # make the password 'skynet' when you create the new user
         # database = 'skynet' # we don't need this for this to work
 
@@ -310,7 +311,7 @@ class UcsdataPipeleine:
                         contractor_country text,
                         launch_site text,
                         launch_vehicle text,
-                        cospar text,
+                        cospar text primary key,
                         norad text,
                         source text,
                         additional_source text,
@@ -518,10 +519,10 @@ class NtwoYOPipeline:
         
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
-        
+        print('creating period table')
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS period(
-                         NORAD text,
+                         NORAD text primary key,
                          Period text)""")
         
     def close_spider(self, spider):
@@ -561,7 +562,7 @@ class NanoSatsPipeline:
                          Units text,
                          Status text,
                          Launched text,
-                         NORAD text,
+                         NORAD text primary key,
                          Deployer text,
                          Launcher text,
                          Organization text,
@@ -623,7 +624,7 @@ class TheSpaceReportPipeline:
         
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS data_spacereport (
-                         LaunchID text,
+                         LaunchID text primary key,
                          DateTime text,
                          LaunchVehicle text,
                          OperatorCountry text,
