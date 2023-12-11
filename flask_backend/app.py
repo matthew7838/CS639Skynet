@@ -1,10 +1,14 @@
-from flask import Flask, request, jsonify
+import pandas as pd
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 from models import db, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord, \
     Satellite_Removed, TestVersionControl, UcsMaster
 from functools import wraps
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import os
+import io
 import traceback
 import jwt
 from sqlalchemy import func
@@ -112,6 +116,45 @@ def rollback():
     else:
         return jsonify({'message': 'Version not found'}), 404
 
+@app.route('/api/export/<string:format>')
+def export_data(format):
+    data = UcsMaster.query.all()
+    df = pd.DataFrame([vars(d) for d in data])  # 转换为 DataFrame
+
+    if format == 'csv':
+        csv_file = df.to_csv(index=False)
+        return send_file(csv_file, mimetype='text/csv', attachment_filename='data.csv', as_attachment=True)
+    elif format == 'excel':
+        excel_file = df.to_excel(index=False)
+        return send_file(excel_file, mimetype='application/vnd.ms-excel', attachment_filename='data.xlsx', as_attachment=True)
+    elif format == 'pdf':
+        pdf_file = create_pdf(data)
+        return send_file(pdf_file, mimetype='application/pdf', attachment_filename='data.pdf', as_attachment=True)
+    else:
+        return "Invalid format", 400
+
+def create_pdf(data):
+    buffer = io.BytesIO()
+
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    c.drawString(100, height - 100, "UCS Master Data Export")
+
+    y_position = height - 130
+    for row in data:
+        text = ', '.join(f"{key}: {value}" for key, value in row.items())
+        c.drawString(50, y_position, text)
+        y_position -= 20
+
+        if y_position < 40:
+            c.showPage()
+            y_position = height - 50
+
+    c.save()
+
+    buffer.seek(0)
+    return buffer
 
 @app.route('/some-protected-route')
 @token_required

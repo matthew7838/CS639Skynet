@@ -9,33 +9,63 @@
             color: white;
             display: flex;
             align-items: center;
-            justify-content: center;">
+            justify-content: center;
+          ">
           <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
           text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
           :default-active="$route.path">
-          <el-menu-item index="/">
-            <i class="el-icon-house"></i>
-            <span slot="title">Home Page</span>
-          </el-menu-item>
-          <el-menu-item index="/edit">
-            <i class="el-icon-time"></i>
-            <span slot="title">Edit History</span>
-          </el-menu-item>
-          <el-menu-item index="/removed">
-            <i class="el-icon-delete"></i>
-            <span slot="title">Removed</span>
+          <!-- Master Database Submenu -->
+          <el-submenu index="1">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Master Database</span>
+            </template>
+            <el-menu-item index="/">
+              <i class="el-icon-house"></i>
+              Home Page
+            </el-menu-item>
+            <el-menu-item index="/edit">
+              <i class="el-icon-edit"></i>
+              Edit History
+            </el-menu-item>
+            <el-menu-item index="/removed">
+              <i class="el-icon-delete"></i>
+              Removed
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <i class="el-icon-time"></i>
+              History
+            </el-menu-item>
+          </el-submenu>
+          <el-menu-item index="/ucs_removed">
+              <i class="el-icon-delete"></i>
+              UCS Removed
           </el-menu-item>
           <el-menu-item index="/version">
-            <i class="el-icon-time"></i>
+            <i class="el-icon-date"></i>
             <span slot="title">Version Control</span>
           </el-menu-item>
-          <el-menu-item index="/history">
-            <i class="el-icon-time"></i>
-            <span slot="title">History</span>
-          </el-menu-item>
+          <el-submenu index="2">
+            <template slot="title">
+              <i class="el-icon-download"></i>
+              <span>Export</span>
+            </template>
+            <el-menu-item @click.native="exportData('pdf')">
+              <i class="el-icon-notebook-2"></i>
+              Export to Excel
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('excel')">
+              <i class="el-icon-document"></i>
+              Export to PDF
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('csv')">
+              <i class="el-icon-document-copy"></i>
+              Export to CSV
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -57,7 +87,8 @@
           </el-breadcrumb>
 
           <!-- Search input for satellite name -->
-          <el-input v-model="searchQuery" placeholder="Search by Satellite Name" style="width: 300px; margin-left: 20px;">
+          <el-input v-model="searchQuery" placeholder="Search by Satellite Name"
+                    style="width: 300px; margin-left: 20px;">
           </el-input>
         </el-header>
 
@@ -67,12 +98,13 @@
             <el-table-column prop="version" label="Version"></el-table-column>
             <el-table-column prop="timestamp" label="Timestamp"></el-table-column>
             <el-table-column
-              label="Operations"
-              width="180">
+                label="Operations"
+                width="180">
               <template slot-scope="scope">
                 <el-button
-                  size="mini"
-                  @click="rollbackVersion(scope.row)">Rollback</el-button>
+                    size="mini"
+                    @click="rollbackVersion(scope.row)">Rollback
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -87,6 +119,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -108,7 +141,7 @@ export default {
     filteredData() {
       if (this.searchQuery) {
         return this.tableData.filter(item =>
-          item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
+            item.satellite_name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
       return this.tableData;
@@ -127,8 +160,7 @@ export default {
     async fetchEditRecords() {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/get-edit-records"
-
+            "http://localhost:8000/api/get-edit-records"
         );
         this.tableData = response.data;
         console.log(this.tableData);
@@ -146,7 +178,7 @@ export default {
     },
     async rollbackVersion(version) {
       try {
-        await axios.post("http://localhost:8000/api/rollback", { version: version });
+        await axios.post("http://localhost:8000/api/rollback", {version: version});
       } catch (error) {
         console.error('Error during rollback:', error);
       }
@@ -254,7 +286,7 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button+.el-button {
+.el-button + .el-button {
   margin-left: 0px;
 }
 </style>

@@ -40,9 +40,31 @@
             </el-menu-item>
           </el-submenu>
           <el-menu-item index="/ucs_removed">
-              <i class="el-icon-time"></i>
+              <i class="el-icon-delete"></i>
               UCS Removed
           </el-menu-item>
+          <el-menu-item index="/version">
+            <i class="el-icon-date"></i>
+            <span slot="title">Version Control</span>
+          </el-menu-item>
+          <el-submenu index="2">
+            <template slot="title">
+              <i class="el-icon-download"></i>
+              <span>Export</span>
+            </template>
+            <el-menu-item @click.native="exportData('pdf')">
+              <i class="el-icon-notebook-2"></i>
+              Export to Excel
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('excel')">
+              <i class="el-icon-document"></i>
+              Export to PDF
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('csv')">
+              <i class="el-icon-document-copy"></i>
+              Export to CSV
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -249,8 +271,11 @@ export default {
       this.otherReason = "";
     },
     logout() {
-      localStorage.removeItem("authToken"); // 清除本地存储中的 token
-      this.$router.push("/login"); // 重定向到登录页面
+      localStorage.removeItem("authToken");
+      this.$router.push("/login");
+    },
+    exportData(format) {
+      window.location.href = `http://localhost:8000/api/export/${format}`;
     },
     getUsername() {
       // Retrieve the username from local storage
