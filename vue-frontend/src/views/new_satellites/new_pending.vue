@@ -125,14 +125,14 @@
 
                 <!--        Main Page-->
                 <el-main>
-                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_date', order: 'ascending' }" border
-                        style="width: 100%" :row-style="({ row }) =>
-                            row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
+                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_datedata', order: 'ascending' }"
+                        border style="width: 100%" :row-style="({ row }) =>
+                            row.data_status === 2 ? { backgroundColor: '#ffe79f' } : {}
                             ">
                         <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
-                        <el-table-column prop="launch_date" label="Launch Date" width="200" :formatter="formatDate"
-                            sortable>
+                        <el-table-column prop="launch_date" label="Launch Date" sortable width="200" :formatter="formatDate"
+                            >
                         </el-table-column>
                         <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')"
                             width="150">
@@ -262,7 +262,6 @@ export default {
             isApproveModalVisible: false,
             approvalReason: '',
             tempApproveRow: null,
-            launchDateSortOrder: null, // Temporary storage for the row to be approved
         };
     },
     mounted() {
@@ -270,17 +269,9 @@ export default {
         this.getUsername();
     },
     methods: {
-        customSortByLaunchDate(order) {
-            this.tableData.sort((a, b) => {
-                const dateA = new Date(a.launch_date);
-                const dateB = new Date(b.launch_date);
-                return order === 'ascending' ? dateA - dateB : dateB - dateA;
-            });
-        },
-        formatDate(row, column, cellValue, index) {
+        formatDate(row, column, cellValue) {
             if (cellValue) {
                 const date = new Date(cellValue);
-                console.log(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
                 return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             }
             return cellValue;

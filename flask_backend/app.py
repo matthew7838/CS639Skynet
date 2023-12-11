@@ -207,10 +207,19 @@ def get_satellites_master():
         # Search query parameter
         search_query = request.args.get('search', '', type=str)
 
+        # Data status filter parameter
+        data_status_filter = request.args.get('data_status')
+
         # Query with optional filtering
         query = Satellite_Master.query.filter(not_(Satellite_Master.data_status.in_([3])))
+
+        # Apply search query filter if provided
         if search_query:
-            query = query.filter(func.lower(Satellite_Master.cospar).like(f'%{search_query.lower()}%'))  # Example for filtering by name
+            query = query.filter(func.lower(Satellite_Master.cospar).like(f'%{search_query.lower()}%'))
+
+        # Apply data status filter if provided
+        if data_status_filter:
+            query = query.filter(Satellite_Master.data_status == data_status_filter)
 
         # Get total count after filtering
         total_count = query.count()
@@ -279,17 +288,23 @@ def master_satellites_remove():
         for update in updates:
             cospar = update['cospar']
             reason = update['reason']
+
+            # Fetch the old data_status from Master_Pending
+            pending_record = Master_Pending.query.filter_by(cospar=cospar).first()
+            old_data_status = pending_record.old_data_status if pending_record else None
+
             # Fetch the satellite to be removed
             satellite = Satellite_Master.query.filter_by(cospar=cospar).first()
             if satellite:
+                if old_data_status is not None:
+                    satellite.data_status = old_data_status  # Set to old data_status
+
                 # Prepare data for Satellite_Removed
-                removed_data = satellite.to_dict()  # Convert to dict
-                # Add additional information for Satellite_Removed
                 removed_data = satellite.to_dict()  # Convert to dict and remove 'id'
                 removed_data.pop('id', None)  # Remove the 'id' key
                 removed_satellite = Satellite_Removed(
                     **removed_data,
-                    username = name,
+                    username=name,
                     removal_source='ucs_master',
                     removal_reason=reason
                 )
@@ -902,6 +917,20 @@ def ucs_unremove_satellite():
         print(f"Exception occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/alldata', methods=['GET'])
+def export_master():
+    try:
+        # Query all data from the Satellite_Master table
+        all_data = Satellite_Master.query.all()
+
+        # Convert data to a list of dictionaries
+        data_list = [item.to_dict() for item in all_data]  # Assuming you have a to_dict method
+
+        return jsonify(data_list)
+
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        return jsonify({'error': 'Failed to fetch data'}), 500
 
     
 

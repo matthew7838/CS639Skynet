@@ -112,6 +112,9 @@
           <!-- Add Row Button -->
           <el-button @click="showAddRowDialog = true" type="primary">Add New Row</el-button>
 
+          <el-button type="primary" style="margin-left:10px;" @click="exportToExcel">Export to Excel</el-button>
+
+
           <el-dropdown>
             <el-button>
               Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
@@ -130,7 +133,7 @@
         <!--        Main Page-->
         <el-main>
           <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
-            row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
+            row.data_status === 2 ? { backgroundColor: '#ffe79f' } : {}
             ">
             <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
             <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
@@ -158,9 +161,10 @@
             <!-- Dynamically generated 'source' columns -->
             <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column" width="350">
             </el-table-column>
-            <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+            <el-table-column prop="data_status" label="data_status" width="150" :filters="dataStatusFilters"
+              :filter-method="filterHandler" filter-placement="bottom-start">
+            </el-table-column>
             <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
-            <!--<el-table-column prop="data_status" label="data_status" width="150"></el-table-column> -->
             <el-table-column fixed="right" label="Edit">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
@@ -229,6 +233,8 @@
 
 <script>
 import axios from "axios";
+import * as XLSX from 'xlsx';
+
 
 export default {
   data() {
@@ -255,7 +261,11 @@ export default {
       editColumns: [],
       dynamicColumns: [],
       showAddRowDialog: false,  // Controls visibility of the add row dialog
-      newRow: {}
+      newRow: {},
+      currentDataStatusFilter: null,
+      dataStatusFilters: [
+        { text: 'Highlighted', value: 2, column: 'data_status' },
+      ],
     };
   },
   mounted() {
@@ -263,6 +273,44 @@ export default {
     this.getUsername();
   },
   methods: {
+    filterHandler(value, row, column) {
+      // Check if the filter is for 'data_status'
+      if (column.property === 'data_status') {
+        console.log(value)
+        if (this.currentDataStatusFilter !== value) { // Check if the filter value has changed
+          this.currentDataStatusFilter = value; // Update the current filter value
+          this.fetchSatellites(); // Fetch data with the new filter
+        }
+        return true; // Return true to indicate that filtering is handled
+      }
+      // Other filtering logic...
+    },
+    async exportToExcel() {
+      try {
+        // Fetch all data from the backend
+        const response = await axios.get(`http://localhost:8000/api/alldata`);
+        const allData = response.data;
+
+        // Process and export the data
+        const worksheet = XLSX.utils.json_to_sheet(allData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+        XLSX.writeFile(workbook, "ExportedData.xlsx");
+
+        this.$message({
+          message: 'Data exported successfully.',
+          type: 'success',
+          duration: 2000
+        });
+      } catch (error) {
+        console.error('Export Error:', error);
+        this.$message({
+          message: 'Failed to export data.',
+          type: 'error',
+          duration: 2000
+        });
+      }
+    },
     initializeNewRow() {
       if (this.tableData.length > 0) {
         const firstRow = this.tableData[0];
@@ -400,33 +448,29 @@ export default {
     async fetchSatellites() {
       const limit = 10;
       const page = this.currentPage;
+      let dataStatusFilter = this.currentDataStatusFilter;
       try {
-        /* const response = await axios.get(
-          "http://localhost:8000/api/satellites_master?page=${page}&limit=${limit}"
-        ); // replace with your Flask app URL
-        this.tableData = response.data.map((row) => ({
-          ...row,
-          editing: false,
-        }));*/
-        axios.get(`http://localhost:8000/api/satellites_master?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
-          .then(response => {
-            this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
-            this.totalItems = response.data.total_count;
-            // Extract column names from the first row of tableData
-            if (this.tableData.length > 0) {
-              const allColumns = Object.keys(this.tableData[0]);
-              this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-              this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status'];
+        const response = await axios.get(`http://localhost:8000/api/satellites_master`, {
+          params: {
+            page: page,
+            limit: limit,
+            search: encodeURIComponent(this.searchQuery),
+            data_status: dataStatusFilter // Include the filter in the request
+          }
+        });
+        this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
+        this.totalItems = response.data.total_count;
+        if (this.tableData.length > 0) {
+          const allColumns = Object.keys(this.tableData[0]);
+          this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+          this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status'];
 
-              // Define editColumns as all columns that are not dynamic or manual
-              this.editColumns = allColumns.filter(col =>
-                !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
-              );
-              this.initializeNewRow();
-            }
-          })
-          .catch(error => console.error("Error:", error));
-
+          // Define editColumns as all columns that are not dynamic or manual
+          this.editColumns = allColumns.filter(col =>
+            !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+          );
+          this.initializeNewRow();
+        }
       } catch (error) {
         console.error("There was an error fetching the data:", error);
       }
