@@ -26,6 +26,7 @@ class Planet4589spiderSpider(scrapy.Spider):
     def parse(self, response):
         #set default data_status
         default_data_status = 10
+        source_string = f'JMSatcat{datetime.now().strftime("%m_%y")}'
         tsv = StringIO(response.text)
         df = pd.read_csv(tsv, sep='\t', dtype=str)
         df = df.drop(0)
@@ -34,6 +35,7 @@ class Planet4589spiderSpider(scrapy.Spider):
         #change data_status = 2 for re-entered sats
         #for sats with Status == 'R'
         df['data_status'] = default_data_status
+        df['source_used_for_orbital_data'] = source_string
         df.loc[df['Status'] == 'R', 'data_status'] = 2
         # df = df[df['Status'].str.startswith('O')]
         #print(f'length = {len(df)}')
