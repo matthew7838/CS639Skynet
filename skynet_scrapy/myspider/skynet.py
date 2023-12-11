@@ -48,10 +48,10 @@ def main():
         Planet4589spiderSpider,
         ReentrypredictorSpider,
         OrbitalfocusspiderSpider,
-        UcsdataSpider,
         NtwoYOSpider,
         NanoSatsSpider,
         TheSpaceReportSpider,
+        UcsdataSpider,
     ]
     
     settings = get_project_settings()
