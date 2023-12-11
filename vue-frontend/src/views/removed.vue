@@ -52,11 +52,11 @@
               <i class="el-icon-download"></i>
               <span>Export</span>
             </template>
-            <el-menu-item @click.native="exportData('pdf')">
+            <el-menu-item @click.native="exportData('excel')">
               <i class="el-icon-notebook-2"></i>
               Export to Excel
             </el-menu-item>
-            <el-menu-item @click.native="exportData('excel')">
+            <el-menu-item @click.native="exportData('pdf')">
               <i class="el-icon-document"></i>
               Export to PDF
             </el-menu-item>
@@ -179,6 +179,9 @@ export default {
     logout() {
       localStorage.removeItem('authToken'); // 清除本地存储中的 token
       this.$router.push('/login'); // 重定向到登录页面
+    },
+    exportData(format) {
+      window.location.href = `http://localhost:8000/api/export/${format}`;
     },
     getUsername() {
       // Retrieve the username from local storage

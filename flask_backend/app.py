@@ -9,6 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 import io
+from io import BytesIO
 import traceback
 import jwt
 from sqlalchemy import func
@@ -122,20 +123,39 @@ def export_data(format):
     df = pd.DataFrame([vars(d) for d in data])  # 转换为 DataFrame
 
     if format == 'csv':
-        csv_file = df.to_csv(index=False)
-        return send_file(csv_file, mimetype='text/csv', attachment_filename='data.csv', as_attachment=True)
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False, encoding='utf-8')
+        csv_buffer.seek(0)
+        return send_file(
+            csv_buffer,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name='data.csv'
+        )
     elif format == 'excel':
-        excel_file = df.to_excel(index=False)
-        return send_file(excel_file, mimetype='application/vnd.ms-excel', attachment_filename='data.xlsx', as_attachment=True)
+        excel_buffer = BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False)
+        excel_buffer.seek(0)
+        return send_file(
+            excel_buffer,
+            mimetype='application/vnd.ms-excel',
+            as_attachment=True,
+            download_name='data.xlsx'
+        )
     elif format == 'pdf':
-        pdf_file = create_pdf(data)
-        return send_file(pdf_file, mimetype='application/pdf', attachment_filename='data.pdf', as_attachment=True)
+        pdf_buffer = create_pdf(data)
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='data.pdf'
+        )
     else:
         return "Invalid format", 400
 
 def create_pdf(data):
     buffer = io.BytesIO()
-
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
@@ -143,7 +163,8 @@ def create_pdf(data):
 
     y_position = height - 130
     for row in data:
-        text = ', '.join(f"{key}: {value}" for key, value in row.items())
+        row_data = {key: getattr(row, key) for key in row.__table__.columns.keys()}
+        text = ', '.join(f"{key}: {value}" for key, value in row_data.items())
         c.drawString(50, y_position, text)
         y_position -= 20
 
@@ -152,7 +173,6 @@ def create_pdf(data):
             y_position = height - 50
 
     c.save()
-
     buffer.seek(0)
     return buffer
 

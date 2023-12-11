@@ -52,11 +52,11 @@
               <i class="el-icon-download"></i>
               <span>Export</span>
             </template>
-            <el-menu-item @click.native="exportData('pdf')">
+            <el-menu-item @click.native="exportData('excel')">
               <i class="el-icon-notebook-2"></i>
               Export to Excel
             </el-menu-item>
-            <el-menu-item @click.native="exportData('excel')">
+            <el-menu-item @click.native="exportData('pdf')">
               <i class="el-icon-document"></i>
               Export to PDF
             </el-menu-item>
