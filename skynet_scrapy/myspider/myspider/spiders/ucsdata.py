@@ -67,7 +67,6 @@ class UcsdataSpider(scrapy.Spider):
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
         df = df.drop(['Comments', 
                       'Unnamed: 28', 
-                      'Source Used for Orbital Data',
                       'Source.2',
                       'Source.3',
                       'Source.4',
@@ -133,6 +132,7 @@ class UcsdataSpider(scrapy.Spider):
             'Launch Vehicle': 'launch_vehicle',
             'COSPAR Number': 'cospar',
             'NORAD Number': 'norad',
+            'Source Used for Orbital Data': 'source_used_for_orbital_data',
             'Source': 'source',
             'Source.1': 'additional_source',
         }
@@ -162,7 +162,6 @@ class UcsdataSpider(scrapy.Spider):
                 value = row.get(field)
                 ucs_item[field] = str(value).strip()
             yield ucs_item
-            #print(ucs_item)
             self.processed_count += 1
             self.scraped_items.append(ucs_item)
             progress_bar.update(1)

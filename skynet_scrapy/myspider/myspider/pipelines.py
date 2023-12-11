@@ -11,6 +11,7 @@ from datetime import datetime
 import psycopg2
 from dotenv import load_dotenv
 import os
+from psycopg2 import IntegrityError
 
 load_dotenv()
 print(os.getenv('DB_HOST') )
@@ -29,7 +30,7 @@ class OrbitalfocusPipeline:
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS orbitalfocus(
                          cat_no integer,
-                         designation text,
+                         designation text primary key,
                          name text,
                          date date)""")
         # extra line
@@ -96,7 +97,7 @@ class ReentrypredictorPipeline:
                          launch_date date,
                          predicted_reentry_date date,
                          norad_num integer,
-                         cospar_num text)""")
+                         cospar_num text primary key)""")
         # extra line
         #self.connection.commit()
 
@@ -148,14 +149,14 @@ class Planet4589Pipeline:
 
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
-        print("creating orbitalfocus table")
+        print("creating planet4589/SATCAT table")
         
         # changed one of the column from primary to primry for obvious reasons
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS planet4589(
                          jcat text,
                          satcat integer,
-                         piece text,
+                         piece text primary key,
                          type text,
                          name text,
                          plname text,
@@ -184,7 +185,7 @@ class Planet4589Pipeline:
                          span double precision,
                          spanflag text,
                          shape text,
-                         odate date,
+                         odate text,
                          perigee integer,
                          pf text,
                          apogee integer,
@@ -194,7 +195,9 @@ class Planet4589Pipeline:
                          oporbit text,
                          oqual text,
                          altnames text,
-                         data_status integer)""") # check sdate, odate type
+                         data_status integer,
+                         source_used_for_orbital_data text,
+                         orbit_type text)""") # check sdate, odate type -> changed odate to text to avoid errors while parsing planet4589.tsv
         # extra line
         #self.connection.commit()
 
@@ -222,9 +225,9 @@ class Planet4589Pipeline:
                 """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
                 ddate, status, dest, owner, state, manufacturer, bus, motor, mass, massflag, drymass, dryflag, 
                 totmass, totflag, length, lflag, diameter, dflag, span, spanflag, shape, odate, perigee, pf, apogee, 
-                af, inc, if, oporbit, oqual, altnames, data_status) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                af, inc, if, oporbit, oqual, altnames, data_status, source_used_for_orbital_data, orbit_type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s, %s)""",
+                %s, %s, %s, %s, %s, %s)""",
                 (
                     item['JCAT'],
                     item['Satcat'],
@@ -267,7 +270,9 @@ class Planet4589Pipeline:
                     item['OpOrbit'],
                     item['OQUAL'],
                     item['AltNames'],
-                    item['data_status']
+                    item['data_status'],
+                    item['source_used_for_orbital_data'],
+                    item['orbit_type']
                 ))
             self.connection.commit()
         except Exception as e:
@@ -314,11 +319,12 @@ class UcsdataPipeleine:
                         contractor_country text,
                         launch_site text,
                         launch_vehicle text,
-                        cospar text,
+                        cospar text primary key,
                         norad text,
                         source text,
                         additional_source text,
-                        data_status integer)""")
+                        data_status integer,
+                        source_used_for_orbital_data text)""")
         #self.connection.commit()
 
         print('creating ucs_master_duplicates table')
@@ -353,7 +359,8 @@ class UcsdataPipeleine:
                         norad text,
                         source text,
                         additional_source text,
-                        data_status integer)""")
+                        data_status integer,
+                        source_used_for_orbital_data text)""")
         #self.connection.commit()
 
 
@@ -404,9 +411,10 @@ class UcsdataPipeleine:
                         norad,
                         source,
                         additional_source,
-                        data_status
+                        data_status,
+                        source_used_for_orbital_data
                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
                         item['full_name'],
                         item['official_name'],
@@ -437,7 +445,8 @@ class UcsdataPipeleine:
                         item['norad'],
                         item['source'],
                         item['additional_source'],
-                        item['data_status']
+                        item['data_status'],
+                        item['source_used_for_orbital_data']
                     ))
             else:
                 self.cur.execute(
@@ -471,9 +480,10 @@ class UcsdataPipeleine:
                         norad,
                         source,
                         additional_source,
-                        data_status
+                        data_status,
+                        source_used_for_orbital_data
                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
                         item['full_name'],
                         item['official_name'],
@@ -504,8 +514,169 @@ class UcsdataPipeleine:
                         item['norad'],
                         item['source'],
                         item['additional_source'],
-                        item['data_status']
+                        item['data_status'],
+                        item['source_used_for_orbital_data']
                     ))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
+        return item
+
+class NtwoYOPipeline:
+    # this class is for https://www.n2yo.com/database/?q=#results
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'postgres'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        print('creating period table')
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS period(
+                         NORAD text primary key,
+                         Period text)""")
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+    
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("INSERT INTO period (NORAD, Period) VALUES (%s, %s)", (item["NORAD"], item["Period"]))
+            self.connection.commit()
+        except IntegrityError as e:
+            self.connection.rollback()
+            print(f'No duplicates!')
+        except Exception as e:
+            self.connection.rollback()
+            #print(f'Error during item processing: {e}')
+        return item
+
+class NanoSatsPipeline:
+    # this class is for https://www.nanosats.eu/database
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'postgres'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        print('creating nanosats table')
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS nanosats(
+                         NAME text,
+                         Type text,
+                         Units text,
+                         Status text,
+                         Launched text,
+                         NORAD text primary key,
+                         Deployer text,
+                         Launcher text,
+                         Organization text,
+                         Institution text,
+                         Entity text,
+                         Nation text,
+                         Launch_Brokerer text,
+                         Partners text,
+                         Oneliner text,
+                         Description text)""")
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+
+
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("""INSERT INTO nanosats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                             ON CONFLICT (NORAD) DO NOTHING
+                             """, (
+                                item["Name"],
+                                item["Type"],
+                                item["Units"],
+                                item["Status"],
+                                item["Launched"],
+                                item["NORAD"],
+                                item["Deployer"],
+                                item["Launcher"],
+                                item["Organisation"],
+                                item["Institution"],
+                                item["Entity"],
+                                item["Nation"],
+                                item["Launch_Brokerer"],
+                                item["Partners"],
+                                item["Oneliner"],
+                                item["Description"]
+                            ))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during item processing: {e}')
+        return item
+    
+class TheSpaceReportPipeline:
+    # this class is for https://www.thespacereport.org/resources/launch-log-2023/
+    def __init__(self):
+        hostname = 'localhost' # this will be universal
+        username = 'postgres'  # create a new user with name: 'skynetapp'
+        password = 'skynet' # make the password 'skynet' when you create the new user
+        #database = 'skynet' # we don't need this for this to work
+        
+        self.connection = psycopg2.connect(host=hostname, user=username, password=password)
+        self.cur = self.connection.cursor()
+        print('creating data_spaceport table')
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS data_spacereport (
+                         LaunchID text primary key,
+                         DateTime text,
+                         LaunchVehicle text,
+                         OperatorCountry text,
+                         LaunchSite text,
+                         Status text,
+                         MissionSector text,
+                         Crewed text,
+                         FirstStageRecovery text)
+                         """)
+        
+    def close_spider(self, spider):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error during commit: {e}')
+        finally:
+            self.cur.close()
+            self.connection.close()
+
+    def process_item(self, item, spider):
+        try:
+            self.cur.execute("""INSERT INTO data_spacereport VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (LaunchID) DO NOTHING""", (
+                                item["LaunchID"],
+                                item["DateTime"],
+                                item["LaunchVehicle"],
+                                item["OperatorCountry"],
+                                item["LaunchSite"],
+                                item["Status"],
+                                item["MissionSector"],
+                                item["Crewed"],
+                                item["FirstStageRecovery"]
+                            ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()

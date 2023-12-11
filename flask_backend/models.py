@@ -34,6 +34,7 @@ class Satellite_New(db.Model):
     launch_vehicle = db.Column(db.String(255))
     cospar = db.Column(db.String(255), primary_key=True)
     norad = db.Column(db.Integer)
+    source_used_for_orbital_data = db.Column(db.String(255))
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
     data_status = db.Column(db.Integer)
@@ -70,7 +71,8 @@ class Satellite_New(db.Model):
             'norad': self.norad,
             'source': self.source,
             'additional_source': self.additional_source,
-            'data_status': self.data_status
+            'data_status': self.data_status,
+            'source_used_for_orbital_data': self.source_used_for_orbital_data
         }
     
 #ucs_master_dataset
@@ -105,6 +107,7 @@ class Satellite_Master(db.Model):
     cospar = db.Column(db.String(255), primary_key=True)
     norad = db.Column(db.String(255))
     data_status =  db.Column(db.Integer)
+    source_used_for_orbital_data = db.Column(db.String(255))
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
     
@@ -140,7 +143,9 @@ class Satellite_Master(db.Model):
             'norad': self.norad,
             'data_status': self.data_status,
             'source': self.source,
-            'additional_source': self.additional_source
+            'additional_source': self.additional_source,
+            'source_used_for_orbital_data': self.source_used_for_orbital_data,
+
         }
     
 class Satellite_Duplicates(db.Model):
@@ -176,6 +181,7 @@ class Satellite_Duplicates(db.Model):
     data_status =  db.Column(db.Integer)
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
+    source_used_for_orbital_data = db.Column(db.String(255))
     
     def to_dict(self):
         return {
@@ -210,7 +216,9 @@ class Satellite_Duplicates(db.Model):
             'norad': self.norad,
             'data_status': self.data_status,
             'source': self.source,
-            'additional_source': self.additional_source
+            'additional_source': self.additional_source,
+            'source_used_for_orbital_data': self.source_used_for_orbital_data,
+
         }
     
 class Satellite_Removed(db.Model):
@@ -247,6 +255,7 @@ class Satellite_Removed(db.Model):
     data_status =  db.Column(db.Integer)
     source = db.Column(db.String(255))
     additional_source = db.Column(db.String(255))
+    source_used_for_orbital_data = db.Column(db.String(255))
 
     # Additional columns for removed satellites
     username = db.Column(db.String(255))
@@ -291,7 +300,8 @@ class Satellite_Removed(db.Model):
             'username': self.username,
             'removal_date': self.removal_date,
             'removal_reason': self.removal_reason,
-            'removal_source': self.removal_source
+            'removal_source': self.removal_source,
+            'source_used_for_orbital_data': self.source_used_for_orbital_data
         }
 
 

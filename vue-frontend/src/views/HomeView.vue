@@ -313,13 +313,12 @@ export default {
             type: 'success',
             duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
           });
-
           // Optionally, add the new row to the tableData if the backend doesn't return the updated list
           this.tableData.push({ ...dataToSend, username: this.username });  // Include the username in the table data
-
           // Close the dialog and reset newRow
           this.showAddRowDialog = false;
           this.newRow = { ...this.newRowTemplate }; // Reset newRow for next use
+          this.fetchSatellites();
         })
         .catch(error => {
           // Handle error response

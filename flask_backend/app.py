@@ -156,8 +156,9 @@ def get_satellites_duplicate():
         })
 
     except Exception as e:
-        print("Error:", e)
-        return jsonify({'error': str(e)}), 500
+        error_details = traceback.format_exc()
+        print("Error:", error_details)  # Now printing the full stack trace
+        return jsonify({'error': str(error_details)}), 500
     
 #NEW_LAUNCHES
 @app.route('/api/satellites_new', methods=['GET'])

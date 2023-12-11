@@ -71,6 +71,8 @@ class Planet4589Item(scrapy.Item):
     OQUAL = scrapy.Field()
     AltNames = scrapy.Field()
     data_status = scrapy.Field()
+    source_used_for_orbital_data = scrapy.Field()
+    orbit_type = scrapy.Field()
 
 class UcsdataItem(scrapy.Item):
     full_name = scrapy.Field()
@@ -103,3 +105,37 @@ class UcsdataItem(scrapy.Item):
     source = scrapy.Field()
     additional_source = scrapy.Field()
     data_status = scrapy.Field()
+    source_used_for_orbital_data = scrapy.Field()
+
+class NtwoYOItem(scrapy.Item):
+    NORAD = scrapy.Field()
+    Period = scrapy.Field()
+
+class NanoSatsItem(scrapy.Item):
+    Name = scrapy.Field()
+    Type = scrapy.Field()
+    Units = scrapy.Field()
+    Status = scrapy.Field()
+    Launched = scrapy.Field()
+    NORAD = scrapy.Field()
+    Deployer = scrapy.Field()
+    Launcher = scrapy.Field()
+    Organisation = scrapy.Field()
+    Institution = scrapy.Field()
+    Entity = scrapy.Field()
+    Nation = scrapy.Field()
+    Launch_Brokerer = scrapy.Field()
+    Partners = scrapy.Field()
+    Oneliner = scrapy.Field()
+    Description = scrapy.Field()
+
+class TheSpaceReportItem(scrapy.Item):
+    LaunchID = scrapy.Field()
+    DateTime = scrapy.Field()
+    LaunchVehicle = scrapy.Field()
+    OperatorCountry = scrapy.Field()
+    LaunchSite = scrapy.Field()
+    Status = scrapy.Field()
+    MissionSector = scrapy.Field()
+    Crewed = scrapy.Field()
+    FirstStageRecovery = scrapy.Field()

@@ -1,6 +1,9 @@
 from myspider.spiders.orbitalfocusspider import OrbitalfocusspiderSpider
 from myspider.spiders.planet4589 import Planet4589spiderSpider
 from myspider.spiders.reentrypredictor import ReentrypredictorSpider
+from myspider.spiders.ntwoyo import NtwoYOSpider
+from myspider.spiders.nanosats import NanoSatsSpider
+from myspider.spiders.thespacereport import TheSpaceReportSpider
 from myspider.spiders.ucsdata import UcsdataSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -35,8 +38,8 @@ def run_spiders_sequentially(spiders, process):
 def run_after_spiders_finished(result):
     gatherer = Gatherer()
     gatherer.gather()
-    # deletion = Deletions()
-    # deletion.MarkDeletions()
+    #deletion = Deletions()
+    #deletion.MarkDeletions()
     
     return result
 
@@ -45,6 +48,9 @@ def main():
         Planet4589spiderSpider,
         ReentrypredictorSpider,
         OrbitalfocusspiderSpider,
+        NtwoYOSpider,
+        NanoSatsSpider,
+        TheSpaceReportSpider,
         UcsdataSpider,
     ]
     
