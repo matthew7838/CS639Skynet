@@ -23,44 +23,67 @@
                             <span>Master Database</span>
                         </template>
                         <el-menu-item index="/">
-                            <i class="el-icon-house"></i>
-                            Home Page
+                            <i class="el-icon-collection"></i>
+                            Master
                         </el-menu-item>
-                        <el-menu-item index="/edit">
-                            <i class="el-icon-edit"></i>
-                            Edit History
+                        <el-menu-item index="/pending">
+                            <i class="el-icon-refresh"></i>
+                            Pending
                         </el-menu-item>
-                        <el-menu-item index="/removed">
-                            <i class="el-icon-delete"></i>
-                            Removed
-                        </el-menu-item>
-                        <el-menu-item index="/history">
-                            <i class="el-icon-time"></i>
-                            History
-                        </el-menu-item>
+                        <el-menu-item-group title="History">
+                            <el-menu-item index="/edit">
+                                <i class="el-icon-edit"></i>
+                                Edit
+                            </el-menu-item>
+                            <el-menu-item index="/manual">
+                                <i class="el-icon-document"></i>
+                                Manual
+                            </el-menu-item>
+                        </el-menu-item-group>
                     </el-submenu>
                     <el-submenu index="2">
                         <template slot="title">
                             <i class="el-icon-menu"></i>
                             <span>New Satellites</span>
                         </template>
-                        <el-menu-item index="/crawler">
-                            <i class="el-icon-house"></i>
+                        <el-menu-item index="/new_crawler">
+                            <i class="el-icon-aim"></i>
                             Crawler
                         </el-menu-item>
-                        <el-menu-item index="/new_satellites_pending">
-                            <i class="el-icon-edit"></i>
+                        <el-menu-item index="/new_pending">
+                            <i class="el-icon-refresh"></i>
                             Pending
                         </el-menu-item>
-                        <el-menu-item index="/new_satellites_removed_history">
-                            <i class="el-icon-delete"></i>
-                            Removed
+                        <el-menu-item-group title="History">
+                            <el-menu-item index="/new_edit">
+                                <i class="el-icon-edit"></i>
+                                Edit
+                            </el-menu-item>
+                            <el-menu-item index="/new_action">
+                                <i class="el-icon-time"></i>
+                                Action
+                            </el-menu-item>
+                        </el-menu-item-group>
+                    </el-submenu>
+                    <el-submenu index="3">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span>Duplicate Satellites</span>
+                        </template>
+                        <el-menu-item index="/duplicate_pending">
+                            <i class="el-icon-refresh"></i>
+                            Pending
                         </el-menu-item>
                     </el-submenu>
+                    <el-menu-item index="/ucs_removed">
+                        <i class="el-icon-delete"></i>
+                        UCS Removed
+                    </el-menu-item>
                     <el-menu-item @click="logout">
                         <i class="el-icon-switch-button"></i>
                         <span slot="title">Logout</span>
                     </el-menu-item>
+
 
                 </el-menu>
             </el-aside>
@@ -74,7 +97,7 @@
                     </el-breadcrumb>
 
                     <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
-                        <el-breadcrumb-item>Home Page</el-breadcrumb-item>
+                        <el-breadcrumb-item>Pending Page</el-breadcrumb-item>
                     </el-breadcrumb>
 
                     <!-- Search input for satellite name -->
@@ -102,18 +125,17 @@
 
                 <!--        Main Page-->
                 <el-main>
-                    <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
-                        row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
-                        ">
-                        <el-table-column fixed prop="full_name" label="full_name" width="200"></el-table-column>
+                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_date', order: 'ascending' }" border
+                        style="width: 100%" :row-style="({ row }) =>
+                            row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
+                            ">
+                        <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
-                        <el-table-column prop="country" label="country" :filters="[
-                            { text: 'Country11', value: 'Country11' },
-                            { text: 'Country12', value: 'Country12' },
-                            { text: 'Country13', value: 'Country13' },
-                            { text: 'Country14', value: 'Country14' },
-                        ]" :filter-method="filterHandler" filter-placement="bottom-start"
-                            v-if="selectedColumns.includes('country')" width="150">
+                        <el-table-column prop="launch_date" label="Launch Date" width="200" :formatter="formatDate"
+                            sortable>
+                        </el-table-column>
+                        <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')"
+                            width="150">
                             <!-- copy template to if want edit function -->
                             <template slot-scope="scope">
                                 <!-- Check if the row is not in editing mode -->
@@ -194,6 +216,11 @@
 
                 <el-dialog title="Confirm Approval" :visible.sync="isApproveModalVisible" width="30%">
                     <p>Are you sure you want to approve this item?</p>
+
+                    <!-- Input field for the approval reason -->
+                    <el-input v-model="approvalReason" type="textarea" placeholder="Enter reason for approval" rows="2">
+                    </el-input>
+
                     <span slot="footer" class="dialog-footer">
                         <el-button @click="isApproveModalVisible = false">Cancel</el-button>
                         <el-button type="primary" @click="confirmApproval">Confirm</el-button>
@@ -233,14 +260,31 @@ export default {
             editColumns: [],
             dynamicColumns: [],
             isApproveModalVisible: false,
-            tempApproveRow: null, // Temporary storage for the row to be approved
+            approvalReason: '',
+            tempApproveRow: null,
+            launchDateSortOrder: null, // Temporary storage for the row to be approved
         };
     },
     mounted() {
-        this.fetchNewSatellites();
+        this.fetchDuplicateSatellites();
         this.getUsername();
     },
     methods: {
+        customSortByLaunchDate(order) {
+            this.tableData.sort((a, b) => {
+                const dateA = new Date(a.launch_date);
+                const dateB = new Date(b.launch_date);
+                return order === 'ascending' ? dateA - dateB : dateB - dateA;
+            });
+        },
+        formatDate(row, column, cellValue, index) {
+            if (cellValue) {
+                const date = new Date(cellValue);
+                console.log(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            return cellValue;
+        },
         isEditable(column) {
             const nonEditableColumns = ['cospar', 'source'];
             return !nonEditableColumns.includes(column);
@@ -259,90 +303,122 @@ export default {
             this.isApproveModalVisible = true;
         },
         confirmApproval() {
-            // TODO 
             if (this.tempApproveRow) {
-                // Logic to push the approved row to the ucs_master database
-                // For example, using an axios call to your backend API
-                console.log(this.tempApproveRow)
-                axios.post('/api/ucs_master/new_satellites_approve', { data: this.tempApproveRow })
+
+                if (!this.approvalReason.trim()) {
+                    this.$message({
+                        message: 'Please enter a reason for approval.',
+                        type: 'warning',
+                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                    });
+                    return;
+                }
+                // Ensure that tempApproveRow includes an 'id' field
+                const duplicateId = this.tempApproveRow.id;
+
+                axios.post('http://localhost:8000/api/ucs_new/duplicate_satellites_approve', {
+                    id: duplicateId,  // Pass the id of the satellite in Satellite_Duplicates
+                    row: this.tempApproveRow,
+                    name: this.username,
+                    reason: this.approvalReason
+                })
                     .then(response => {
                         console.log('Item approved:', response);
+                        this.$message({
+                            message: 'New Satellite has been approved',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchDuplicateSatellites()
                         // Additional logic after successful approval
                     })
                     .catch(error => {
                         console.error('Error approving item:', error);
+                        this.$message({
+                            message: 'Failed to approvee',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
                     });
 
                 this.isApproveModalVisible = false;
+                this.approvalReason = '';
             }
         },
         handleDeny(row) {
             this.tempDenyRow = row;
             this.isDenyModalVisible = true;
         },
-
         confirmRemoval() {
             if (this.tempDenyRow) {
+
+                if (!this.selectedOption || (this.selectedOption === 'Others' && !this.otherReason.trim())) {
+                    this.$message({
+                        message: 'Please select a reason or provide details for "Others".',
+                        type: 'warning',
+                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                    });
+                    return;
+                }
                 // Logic to push the denied row to the removed database
                 // For example, using an axios call to your backend API
-                axios.post('/api/removed/add', {
-                    data: this.tempDenyRow,
+                axios.post('http://localhost:8000/api/ucs_new/duplicate_satellites_deny', {
+                    row: this.tempDenyRow,
+                    name: this.username,
                     reason: this.selectedOption === 'Others' ? this.otherReason : this.selectedOption
                 })
                     .then(response => {
                         console.log('Item denied and removed:', response);
+                        this.$message({
+                            message: 'New Satellite has been deny',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchDuplicateSatellites()
                         // Additional logic after successful removal
                     })
                     .catch(error => {
                         console.error('Error removing item:', error);
+                        this.$message({
+                            message: 'Failed to deny',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
                     });
 
                 this.isDenyModalVisible = false;
             }
         },
-
-        async fetchNewSatellites() {
+        async fetchDuplicateSatellites() {
             const limit = 10;
             const page = this.currentPage;
             try {
-                /* const response = await axios.get(
-                  "http://localhost:8000/api/satellites_master?page=${page}&limit=${limit}"
-                ); // replace with your Flask app URL
-                this.tableData = response.data.map((row) => ({
-                  ...row,
-                  editing: false,
-                }));*/
-                axios.get(`http://localhost:8000/api/satellites_new?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
-                    .then(response => {
-                        this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
-                        console.log("Table Data:", this.tableData);
-                        this.totalItems = response.data.total_count;
-                        // Extract column names from the first row of tableData
-                        if (this.tableData.length > 0) {
-                            const allColumns = Object.keys(this.tableData[0]);
-                            this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status'];
+                const response = await axios.get(`http://localhost:8000/api/satellites_duplicate?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`);
+                let data = response.data.data.map(row => ({ ...row, editing: false }));
 
-                            // Define editColumns as all columns that are not dynamic or manual
-                            this.editColumns = allColumns.filter(col =>
-                                !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
-                            );
-                        }
-                    })
-                    .catch(error => console.error("Error:", error));
+                // Sort data by 'cospar'
+                data.sort((a, b) => a.cospar.localeCompare(b.cospar));
 
-                console.log(this.tableData);
+                this.tableData = data;
+                this.totalItems = response.data.total_count;
+
+                if (this.tableData.length > 0) {
+                    const allColumns = Object.keys(this.tableData[0]);
+                    this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+                    this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', "launch_date"];
+                    this.editColumns = allColumns.filter(col => !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col));
+                }
             } catch (error) {
-                console.error("There was an error fetching the data:", error);
+                console.error("Error:", error);
             }
         },
         handlePageChange(page) {
             this.currentPage = page;
-            this.fetchNewSatellites();
+            this.fetchDuplicateSatellites();
         },
         handleSizeChange(newSize) {
             this.pageSize = newSize;
-            this.fetchNewSatellites();
+            this.fetchDuplicateSatellites();
         },
         removeRow(index, row) {
             this.tableData.splice(index, 1); // Remove the row
@@ -367,7 +443,7 @@ export default {
             for (const key in row) {
                 if (key !== "editing" && row[key] !== this.backupRow[key]) {
                     let record = {
-                        cospar: row.cospar, // Add the JCAT value here
+                        id: row.id, // Sending the ID of the satellite
                         column: key,
                         oldValue: this.backupRow[key],
                         newValue: row[key],
@@ -379,15 +455,27 @@ export default {
             if (edit_records.length > 0) {
                 // Send the edit records to the backend
                 axios
-                    .post("http://localhost:8000/api/edit-data", {
+                    .post("http://localhost:8000/api/ucs_duplicate/edit-data", {
                         edit_records: edit_records,
                         name: this.username,
                     })
                     .then((response) => {
                         console.log("Edit records sent successfully", response);
+                        this.$message({
+                            message: 'Satellite has been edited',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchDuplicateSatellites();
                     })
                     .catch((error) => {
                         console.error("Error sending edit records", error);
+                        this.$message({
+                            message: 'Failed to edit',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchDuplicateSatellites();
                     });
             }
             // Clear the backup since changes are saved
@@ -437,7 +525,7 @@ export default {
         searchQuery(newQuery, oldQuery) {
             console.log('Search query changed from', oldQuery, 'to', newQuery);
             this.currentPage = 1; // Reset to the first page
-            this.fetchNewSatellites(); // Fetch filtered data
+            this.fetchDuplicateSatellites(); // Fetch filtered data
         }
     },
 };

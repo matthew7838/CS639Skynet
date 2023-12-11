@@ -23,40 +23,64 @@
               <span>Master Database</span>
             </template>
             <el-menu-item index="/">
-              <i class="el-icon-house"></i>
-              Home Page
+              <i class="el-icon-collection"></i>
+              Master
             </el-menu-item>
-            <el-menu-item index="/edit">
-              <i class="el-icon-edit"></i>
-              Edit History
+            <el-menu-item index="/pending">
+              <i class="el-icon-refresh"></i>
+              Pending
             </el-menu-item>
-            <el-menu-item index="/removed">
-              <i class="el-icon-delete"></i>
-              Removed
-            </el-menu-item>
-            <el-menu-item index="/history">
-              <i class="el-icon-time"></i>
-              History
-            </el-menu-item>
+            <el-menu-item-group title="History">
+              <el-menu-item index="/edit">
+                <i class="el-icon-edit"></i>
+                Edit
+              </el-menu-item>
+              <el-menu-item index="/manual">
+                <i class="el-icon-document"></i>
+                Manual
+              </el-menu-item>
+            </el-menu-item-group>
           </el-submenu>
           <el-submenu index="2">
             <template slot="title">
               <i class="el-icon-menu"></i>
               <span>New Satellites</span>
             </template>
-            <el-menu-item index="/crawler">
-              <i class="el-icon-house"></i>
-              Crawler Page
+            <el-menu-item index="/new_crawler">
+              <i class="el-icon-aim"></i>
+              Crawler
             </el-menu-item>
-            <el-menu-item index="/new_satellites_pending">
-              <i class="el-icon-edit"></i>
-              Pending Page
+            <el-menu-item index="/new_pending">
+              <i class="el-icon-refresh"></i>
+              Pending
             </el-menu-item>
-            <el-menu-item index="/new_satellites_record">
-              <i class="el-icon-delete"></i>
-              Record Page
-            </el-menu-item>
+            <el-menu-item-group title="History">
+              <el-menu-item index="/new_edit">
+                <i class="el-icon-edit"></i>
+                Edit
+              </el-menu-item>
+              <el-menu-item index="/new_action">
+                <i class="el-icon-time"></i>
+                Action
+              </el-menu-item>
+            </el-menu-item-group>
           </el-submenu>
+          <el-submenu index="3">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>Duplicate Satellites</span>
+            </template>
+            <el-menu-item index="/duplicate_pending">
+              <i class="el-icon-refresh"></i>
+              Pending
+            </el-menu-item>
+            <el-menu-item-group title="History">
+            </el-menu-item-group>
+          </el-submenu>
+          <el-menu-item index="/ucs_removed">
+            <i class="el-icon-delete"></i>
+            UCS Removed
+          </el-menu-item>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -85,6 +109,9 @@
           Remove:
           <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px" />
 
+          <!-- Add Row Button -->
+          <el-button @click="showAddRowDialog = true" type="primary">Add New Row</el-button>
+
           <el-dropdown>
             <el-button>
               Filter Column<i class="el-icon-arrow-down el-icon--right"></i>
@@ -105,15 +132,9 @@
           <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
             row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
             ">
-            <el-table-column fixed prop="full_name" label="full_name" width="250"></el-table-column>
-            <el-table-column fixed prop="official_name" label="official_name" width="150"></el-table-column>
-            <el-table-column prop="country" label="country" :filters="[
-              { text: 'Country11', value: 'Country11' },
-              { text: 'Country12', value: 'Country12' },
-              { text: 'Country13', value: 'Country13' },
-              { text: 'Country14', value: 'Country14' },
-            ]" :filter-method="filterHandler" filter-placement="bottom-start"
-              v-if="selectedColumns.includes('country')" width="150">
+            <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
+            <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
+            <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')" width="150">
               <!-- copy template to if want edit function -->
               <template slot-scope="scope">
                 <!-- Check if the row is not in editing mode -->
@@ -166,6 +187,26 @@
           :total="totalItems">
         </el-pagination>
 
+        <!-- Add Row Dialog -->
+        <el-dialog title="Add New Row" :visible.sync="showAddRowDialog" width="800px">
+          <el-form ref="addRowForm" :model="newRow" label-position="top">
+            <el-row :gutter="15">
+              <!-- Dynamically create input fields for each column, excluding 'editing' and 'data_status', four per row -->
+              <el-col :span="6" v-for="(value, key) in newRow" :key="key"
+                v-if="key !== 'editing' && key !== 'data_status'">
+                <el-form-item :label="key">
+                  <el-input v-model="newRow[key]" placeholder="Enter value"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="showAddRowDialog = false">Cancel</el-button>
+            <el-button type="primary" @click="addNewRow">Save</el-button>
+          </span>
+        </el-dialog>
+
+
         <el-dialog title="Select a Reason for Removal" :visible.sync="isRemoveModalVisible" width="30%">
           <el-radio-group v-model="selectedOption">
             <el-radio label="Re-entered">Re-entered</el-radio>
@@ -212,7 +253,9 @@ export default {
       pageSize: 10,
       columns: [], // This now includes all columns
       editColumns: [],
-      dynamicColumns: []
+      dynamicColumns: [],
+      showAddRowDialog: false,  // Controls visibility of the add row dialog
+      newRow: {}
     };
   },
   mounted() {
@@ -220,6 +263,74 @@ export default {
     this.getUsername();
   },
   methods: {
+    initializeNewRow() {
+      if (this.tableData.length > 0) {
+        const firstRow = this.tableData[0];
+        this.newRow = {};
+
+        // Initialize 'cospar', 'satellite_name', and 'official_name' first
+        this.$set(this.newRow, 'cospar', '');
+        this.$set(this.newRow, 'satellite_name', '');
+        this.$set(this.newRow, 'official_name', '');
+
+        // Add other keys reactively
+        Object.keys(firstRow).forEach(key => {
+          if (!['editing', 'data_status', 'source', 'additional_source', 'cospar', 'satellite_name', 'official_name'].includes(key)) {
+            this.$set(this.newRow, key, '');
+          }
+        });
+
+        // Add 'source' and 'additional_source' at the end reactively
+        this.$set(this.newRow, 'source', '');
+        this.$set(this.newRow, 'additional_source', '');
+
+        // Set 'editing' to true
+        this.newRow.editing = false;
+        this.newRow.data_status = 10;
+      }
+    },
+    addNewRow() {
+      // Validate 'cospar'
+      if (!this.newRow.cospar || this.newRow.cospar.trim() === '') {
+        this.$message({
+          message: 'Cospar is required.',
+          type: 'error',
+          duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+        });
+        return;
+      }
+
+      // Prepare the data to be sent
+      const dataToSend = { ...this.newRow, username: this.username };  // Include the username
+      console.log('Data to send:', dataToSend);
+
+      // Send data to the backend
+      axios.post('http://localhost:8000/api/manual-add-stat', dataToSend)
+        .then(response => {
+          // Handle success response
+          this.$message({
+            message: 'New row added successfully.',
+            type: 'success',
+            duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+          });
+
+          // Optionally, add the new row to the tableData if the backend doesn't return the updated list
+          this.tableData.push({ ...dataToSend, username: this.username });  // Include the username in the table data
+
+          // Close the dialog and reset newRow
+          this.showAddRowDialog = false;
+          this.newRow = { ...this.newRowTemplate }; // Reset newRow for next use
+        })
+        .catch(error => {
+          // Handle error response
+          this.$message({
+            message: 'Failed to add new row.',
+            type: 'error',
+            duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+          });
+          console.error('Error:', error);
+        });
+    },
     isEditable(column) {
       const nonEditableColumns = ['cospar', 'source'];
       return !nonEditableColumns.includes(column);
@@ -230,22 +341,34 @@ export default {
     },
     confirmRemoval() {
       // Construct the payload to be sent
+      if (!this.selectedOption) {
+        this.$message({
+          message: 'Please select a reason for removal.',
+          type: 'warning',
+          duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+        });
+        return;
+      }
       const payload = {
         cospar: this.currentRow.cospar, // Assuming 'satellite_name' is the identifier
         reason:
           this.selectedOption === "Others"
             ? this.otherReason
             : this.selectedOption,
+        old_data_status: this.currentRow.data_status
       };
 
-      console.log(payload);
 
       // Send an AJAX request
       axios
         .post("http://localhost:8000/api/remove-sat", payload)
         .then((response) => {
           // Handle success response
-          console.log("Data sent successfully:", response);
+          this.$message({
+            message: 'Satellite has been removed',
+            type: 'success',
+            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+          });
 
           // Remove the row from the local data, if needed
           const index = this.tableData.indexOf(this.currentRow);
@@ -255,7 +378,11 @@ export default {
         })
         .catch((error) => {
           // Handle error response
-          console.error("Error sending data:", error);
+          this.$message({
+            message: 'Failed to remove',
+            type: 'error',
+            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+          });
         });
 
       // Reset modal state and hide it
@@ -270,7 +397,6 @@ export default {
     getUsername() {
       // Retrieve the username from local storage
       this.username = localStorage.getItem("username");
-      console.log("Retrieved username:", this.username);
     },
     async fetchSatellites() {
       const limit = 10;
@@ -286,7 +412,6 @@ export default {
         axios.get(`http://localhost:8000/api/satellites_master?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
           .then(response => {
             this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
-            console.log("Table Data:", this.tableData);
             this.totalItems = response.data.total_count;
             // Extract column names from the first row of tableData
             if (this.tableData.length > 0) {
@@ -298,11 +423,11 @@ export default {
               this.editColumns = allColumns.filter(col =>
                 !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
               );
+              this.initializeNewRow();
             }
           })
           .catch(error => console.error("Error:", error));
 
-        console.log(this.tableData);
       } catch (error) {
         console.error("There was an error fetching the data:", error);
       }
@@ -327,7 +452,6 @@ export default {
       return "";
     },
     startEdit(row) {
-      console.log("Starting edit on row:", row);
       this.backupRow = Object.assign({}, row);
       this.tableData.forEach(r => r.editing = false);
       row.editing = true;
@@ -355,10 +479,20 @@ export default {
             name: this.username,
           })
           .then((response) => {
-            console.log("Edit records sent successfully", response);
+            this.$message({
+              message: 'Satellite has been edit',
+              type: 'success',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
+
           })
           .catch((error) => {
             console.error("Error sending edit records", error);
+            this.$message({
+              message: 'Failed to edit',
+              type: 'error',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
           });
       }
       // Clear the backup since changes are saved
@@ -370,10 +504,6 @@ export default {
       Object.assign(row, this.backupRow);
       row.editing = false;
     },
-    filterHandler(value, row) {
-      // Assuming you want to filter based on the satellite_name property
-      return row.un_registry_country === value;
-    },
     toggleFilters() {
       this.filtersActive = !this.filtersActive;
       // Optionally, add logic here to apply or remove filters
@@ -384,13 +514,11 @@ export default {
 
       // Check if there's any data to filter
       if (!this.tableData || this.tableData.length === 0) {
-        console.log("No data available to filter.");
         return [];
       }
 
       // Simplify the filter for debugging
       const result = this.tableData.filter(row => {
-        console.log("Row Data:", row); // Log each row data
 
         // Debugging: Check if `full_name` is defined in the row
         if (!row.cospar) {
@@ -406,7 +534,6 @@ export default {
   },
   watch: {
     searchQuery(newQuery, oldQuery) {
-      console.log('Search query changed from', oldQuery, 'to', newQuery);
       this.currentPage = 1; // Reset to the first page
       this.fetchSatellites(); // Fetch filtered data
     }

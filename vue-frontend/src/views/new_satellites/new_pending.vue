@@ -84,6 +84,7 @@
                         <span slot="title">Logout</span>
                     </el-menu-item>
 
+
                 </el-menu>
             </el-aside>
 
@@ -96,7 +97,7 @@
                     </el-breadcrumb>
 
                     <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
-                        <el-breadcrumb-item>Removed Satellites</el-breadcrumb-item>
+                        <el-breadcrumb-item>Pending Page</el-breadcrumb-item>
                     </el-breadcrumb>
 
                     <!-- Search input for satellite name -->
@@ -104,9 +105,8 @@
                         style="width: 300px; margin-left: 20px; margin-right: 20px">
                     </el-input>
 
-                    Undo:
-                    <el-switch v-model="showUndoColumn" style="margin-left: 10px; margin-right: 10px" />
-
+                    Operations:
+                    <el-switch v-model="showOperations" style="margin-left: 10px; margin-right: 10px" />
 
                     <el-dropdown>
                         <el-button>
@@ -125,11 +125,15 @@
 
                 <!--        Main Page-->
                 <el-main>
-                    <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
-                        row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
-                        ">
-                        <el-table-column fixed prop="full_name" label="full_name" width="200"></el-table-column>
+                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_date', order: 'ascending' }" border
+                        style="width: 100%" :row-style="({ row }) =>
+                            row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
+                            ">
+                        <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
+                        <el-table-column prop="launch_date" label="Launch Date" width="200" :formatter="formatDate"
+                            sortable>
+                        </el-table-column>
                         <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')"
                             width="150">
                             <!-- copy template to if want edit function -->
@@ -161,23 +165,31 @@
                         </el-table-column>
                         <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
                         <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
-                        <el-table-column prop="username" label="username" width="100"></el-table-column>
-                        <el-table-column prop="removal_date" label="removal_date" width="150"></el-table-column>
-                        <el-table-column fixed="right" prop="removal_reason" label="removal_reason"
-                            :filters="removalReasonFilters" :filter-method="filterHandler" filter-placement="bottom-start"
-                            width="150"></el-table-column>
-                        <el-table-column fixed="right" prop="removal_source" label="removal_source"
-                            :filters="removalSourceFilters" :filter-method="filterHandler" filter-placement="bottom-start"
-                            width="150"></el-table-column>
-                        <el-table-column fixed="right" label="Operations" width="120" v-if="showUndoColumn">
+                        <!--<el-table-column prop="data_status" label="data_status" width="150"></el-table-column> -->
+                        <el-table-column fixed="right" label="Edit">
                             <template slot-scope="scope">
-                                <el-button type="primary" icon="el-icon-refresh" size="mini"
-                                    @click="unremoveRow(scope.row)">
-                                    Undo
+                                <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
+                                    @click="startEdit(scope.row)">Edit
+                                </el-button>
+                                <el-button v-if="scope.row.editing" size="mini" class="operation-button"
+                                    @click="saveEdit(scope.row)">Save
+                                </el-button>
+                                <el-button v-if="scope.row.editing" size="mini" class="operation-button"
+                                    @click="cancelEdit(scope.row)">Cancel
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <!--<el-table-column prop="data_status" label="data_status" width="150"></el-table-column> -->
+                        <!-- New Approve & Deny Column -->
+                        <el-table-column fixed="right" label="Approve" width="100" v-if="showOperations">
+                            <template slot-scope="scope">
+                                <el-button type="success" size="mini" @click="handleApprove(scope.row)">Approve</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" label="Deny" width="100" v-if="showOperations">
+                            <template slot-scope="scope">
+                                <el-button type="danger" size="mini" @click="handleDeny(scope.row)">Deny</el-button>
+                            </template>
+                        </el-table-column>
                     </el-table>
                 </el-main>
 
@@ -204,6 +216,11 @@
 
                 <el-dialog title="Confirm Approval" :visible.sync="isApproveModalVisible" width="30%">
                     <p>Are you sure you want to approve this item?</p>
+
+                    <!-- Input field for the approval reason -->
+                    <el-input v-model="approvalReason" type="textarea" placeholder="Enter reason for approval" rows="2">
+                    </el-input>
+
                     <span slot="footer" class="dialog-footer">
                         <el-button @click="isApproveModalVisible = false">Cancel</el-button>
                         <el-button type="primary" @click="confirmApproval">Confirm</el-button>
@@ -243,46 +260,30 @@ export default {
             editColumns: [],
             dynamicColumns: [],
             isApproveModalVisible: false,
-            showUndoColumn: false,
-            tempApproveRow: null, // Temporary storage for the row to be approved
-            removalReasonFilters: [
-                { text: 'Non-operational', value: 'Non-operational', column: 'removal_reason' },
-                { text: 'Re-entered', value: 'Re-entered', column: 'removal_reason' },
-                { text: 'Others', value: 'Others', column: 'removal_reason' },
-            ],
-            removalSourceFilters: [
-                { text: 'ucs_master', value: 'ucs_master', column: 'removal_source' },
-                { text: 'ucs_new', value: 'ucs_new', column: 'removal_source' },
-                // ... other filters for the second column
-            ],
+            approvalReason: '',
+            tempApproveRow: null,
+            launchDateSortOrder: null, // Temporary storage for the row to be approved
         };
     },
     mounted() {
-        this.fetchRemovedSatellites();
+        this.fetchNewSatellites();
         this.getUsername();
     },
     methods: {
-        unremoveRow(row) {
-            axios.post('http://localhost:8000/api/ucs_unremove_satellite', { id: row.id })
-                .then(response => {
-                    // Handle success
-                    this.$message({
-                        message: 'Satellite un-removed successfully',
-                        type: 'success',
-                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-                    });
-                    this.fetchRemovedSatellites();
-                    // You might want to refresh the table data here
-                })
-                .catch(error => {
-                    // Handle error
-                    console.error('Error un-removing the satellite:', error);
-                    this.$message({
-                        message: 'Failed to un-remove satellite.',
-                        type: 'error',
-                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-                    });
-                });
+        customSortByLaunchDate(order) {
+            this.tableData.sort((a, b) => {
+                const dateA = new Date(a.launch_date);
+                const dateB = new Date(b.launch_date);
+                return order === 'ascending' ? dateA - dateB : dateB - dateA;
+            });
+        },
+        formatDate(row, column, cellValue, index) {
+            if (cellValue) {
+                const date = new Date(cellValue);
+                console.log(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            return cellValue;
         },
         isEditable(column) {
             const nonEditableColumns = ['cospar', 'source'];
@@ -302,49 +303,95 @@ export default {
             this.isApproveModalVisible = true;
         },
         confirmApproval() {
-            // TODO 
             if (this.tempApproveRow) {
                 // Logic to push the approved row to the ucs_master database
                 // For example, using an axios call to your backend API
+
+                if (!this.approvalReason.trim()) {
+                    this.$message({
+                        message: 'Please enter a reason for approval.',
+                        type: 'warning',
+                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                    });
+                    return;
+                }
                 console.log(this.tempApproveRow)
-                axios.post('/api/ucs_master/new_satellites_approve', { data: this.tempApproveRow })
+                axios.post('http://localhost:8000/api/ucs_new/new_satellites_approve', {
+                    row: this.tempApproveRow,
+                    name: this.username,
+                    reason: this.approvalReason
+
+                })
                     .then(response => {
                         console.log('Item approved:', response);
+                        this.$message({
+                            message: 'New Satellite has been approved',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchNewSatellites();
                         // Additional logic after successful approval
                     })
                     .catch(error => {
                         console.error('Error approving item:', error);
+                        this.$message({
+                            message: 'Failed to approve',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
                     });
 
                 this.isApproveModalVisible = false;
+                this.approvalReason = '';
             }
         },
         handleDeny(row) {
             this.tempDenyRow = row;
             this.isDenyModalVisible = true;
         },
-
         confirmRemoval() {
             if (this.tempDenyRow) {
+
+                if (!this.selectedOption || (this.selectedOption === 'Others' && !this.otherReason.trim())) {
+                    this.$message({
+                        message: 'Please select a reason or provide details for "Others".',
+                        type: 'warning',
+                        duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                    });
+                    return;
+                }
+
                 // Logic to push the denied row to the removed database
                 // For example, using an axios call to your backend API
-                axios.post('/api/removed/add', {
-                    data: this.tempDenyRow,
+                axios.post('http://localhost:8000/api/ucs_new/new_satellites_deny', {
+                    row: this.tempDenyRow,
+                    name: this.username,
                     reason: this.selectedOption === 'Others' ? this.otherReason : this.selectedOption
                 })
                     .then(response => {
                         console.log('Item denied and removed:', response);
+                        this.$message({
+                            message: 'New Satellite has been deny',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+                        this.fetchNewSatellites();
                         // Additional logic after successful removal
                     })
                     .catch(error => {
                         console.error('Error removing item:', error);
+                        this.$message({
+                            message: 'Failed to deny',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
                     });
 
                 this.isDenyModalVisible = false;
             }
         },
 
-        async fetchRemovedSatellites() {
+        async fetchNewSatellites() {
             const limit = 10;
             const page = this.currentPage;
             try {
@@ -355,7 +402,7 @@ export default {
                   ...row,
                   editing: false,
                 }));*/
-                axios.get(`http://localhost:8000/api/satellites_removed?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
+                axios.get(`http://localhost:8000/api/satellites_new?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
                     .then(response => {
                         this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
                         console.log("Table Data:", this.tableData);
@@ -364,7 +411,7 @@ export default {
                         if (this.tableData.length > 0) {
                             const allColumns = Object.keys(this.tableData[0]);
                             this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'removal_reason', 'removal_source', 'username', 'removal_date'];
+                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', "launch_date"];
 
                             // Define editColumns as all columns that are not dynamic or manual
                             this.editColumns = allColumns.filter(col =>
@@ -381,11 +428,11 @@ export default {
         },
         handlePageChange(page) {
             this.currentPage = page;
-            this.fetchRemovedSatellites();
+            this.fetchNewSatellites();
         },
         handleSizeChange(newSize) {
             this.pageSize = newSize;
-            this.fetchRemovedSatellites();
+            this.fetchNewSatellites();
         },
         removeRow(index, row) {
             this.tableData.splice(index, 1); // Remove the row
@@ -422,15 +469,26 @@ export default {
             if (edit_records.length > 0) {
                 // Send the edit records to the backend
                 axios
-                    .post("http://localhost:8000/api/edit-data", {
+                    .post("http://localhost:8000/api/ucs_new/edit-data", {
                         edit_records: edit_records,
                         name: this.username,
                     })
                     .then((response) => {
                         console.log("Edit records sent successfully", response);
+                        this.$message({
+                            message: 'Satellite has been edit',
+                            type: 'success',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
+
                     })
                     .catch((error) => {
                         console.error("Error sending edit records", error);
+                        this.$message({
+                            message: 'Failed to edit',
+                            type: 'error',
+                            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+                        });
                     });
             }
             // Clear the backup since changes are saved
@@ -442,15 +500,9 @@ export default {
             Object.assign(row, this.backupRow);
             row.editing = false;
         },
-        filterHandler(value, row, column) {
-            const property = column.property;
-            if (property === 'removal_reason') {
-                return value === 'Others' ? row.removal_reason !== 'Non-operational' && row.removal_reason !== 'Re-entry' : row.removal_reason === value;
-            } else if (property === 'removal_source') {
-                console.log(row.removal_source)
-                console.log(value)
-                return row.removal_source === value;
-            }
+        filterHandler(value, row) {
+            // Assuming you want to filter based on the satellite_name property
+            return row.un_registry_country === value;
         },
         toggleFilters() {
             this.filtersActive = !this.filtersActive;
@@ -486,7 +538,7 @@ export default {
         searchQuery(newQuery, oldQuery) {
             console.log('Search query changed from', oldQuery, 'to', newQuery);
             this.currentPage = 1; // Reset to the first page
-            this.fetchRemovedSatellites(); // Fetch filtered data
+            this.fetchNewSatellites(); // Fetch filtered data
         }
     },
 };

@@ -23,44 +23,67 @@
                             <span>Master Database</span>
                         </template>
                         <el-menu-item index="/">
-                            <i class="el-icon-house"></i>
-                            Home Page
+                            <i class="el-icon-collection"></i>
+                            Master
                         </el-menu-item>
-                        <el-menu-item index="/edit">
-                            <i class="el-icon-edit"></i>
-                            Edit History
+                        <el-menu-item index="/pending">
+                            <i class="el-icon-refresh"></i>
+                            Pending
                         </el-menu-item>
-                        <el-menu-item index="/removed">
-                            <i class="el-icon-delete"></i>
-                            Removed
-                        </el-menu-item>
-                        <el-menu-item index="/history">
-                            <i class="el-icon-time"></i>
-                            History
-                        </el-menu-item>
+                        <el-menu-item-group title="History">
+                            <el-menu-item index="/edit">
+                                <i class="el-icon-edit"></i>
+                                Edit
+                            </el-menu-item>
+                            <el-menu-item index="/manual">
+                                <i class="el-icon-document"></i>
+                                Manual
+                            </el-menu-item>
+                        </el-menu-item-group>
                     </el-submenu>
                     <el-submenu index="2">
                         <template slot="title">
                             <i class="el-icon-menu"></i>
                             <span>New Satellites</span>
                         </template>
-                        <el-menu-item index="/crawler">
-                            <i class="el-icon-house"></i>
-                            Crawler Page
+                        <el-menu-item index="/new_crawler">
+                            <i class="el-icon-aim"></i>
+                            Crawler
                         </el-menu-item>
-                        <el-menu-item index="/new_satellites_pending">
-                            <i class="el-icon-edit"></i>
-                            Pending Page
+                        <el-menu-item index="/new_pending">
+                            <i class="el-icon-refresh"></i>
+                            Pending
                         </el-menu-item>
-                        <el-menu-item index="/new_satellites_record">
-                            <i class="el-icon-delete"></i>
-                            Record Page
+                        <el-menu-item-group title="History">
+                            <el-menu-item index="/new_edit">
+                                <i class="el-icon-edit"></i>
+                                Edit
+                            </el-menu-item>
+                            <el-menu-item index="/new_action">
+                                <i class="el-icon-time"></i>
+                                Action
+                            </el-menu-item>
+                        </el-menu-item-group>
+                    </el-submenu>
+                    <el-submenu index="3">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span>Duplicate Satellites</span>
+                        </template>
+                        <el-menu-item index="/duplicate_pending">
+                            <i class="el-icon-refresh"></i>
+                            Pending
                         </el-menu-item>
                     </el-submenu>
+                    <el-menu-item index="/ucs_removed">
+                        <i class="el-icon-delete"></i>
+                        UCS Removed
+                    </el-menu-item>
                     <el-menu-item @click="logout">
                         <i class="el-icon-switch-button"></i>
                         <span slot="title">Logout</span>
                     </el-menu-item>
+
                 </el-menu>
             </el-aside>
 
@@ -119,7 +142,7 @@ export default {
     },
     computed: {
         scraperButtonText() {
-            return this.isScraperRunning ? 'Running...' : 'Run Scraper';
+            return this.isScraperRunning ? 'Running...' : 'Run Crawler';
         }
     },
     mounted() {

@@ -10,19 +10,19 @@ const routes = [
         component: () => import('../views/HomeView.vue')
     },
     {
-        path: '/removed',
-        name: 'remove',
-        component: () => import('../views/removed.vue')
-    },
-    {
-        path: '/history',
-        name: 'history',
-        component: () => import('../views/history.vue')
+        path: '/pending',
+        name: 'Pending',
+        component: () => import('../views/pending.vue')
     },
     {
         path: '/edit',
         name: '/edit',
         component: () => import('../views/edit.vue')
+    },
+    {
+        path: '/manual',
+        name: '/manual',
+        component: () => import('../views/manual.vue')
     },
     {
         path: '/login',
@@ -40,14 +40,29 @@ const routes = [
         component: () => import('../views/ucs_removed.vue')
     },
     {
-        path: '/crawler',
-        name: 'Crawler',
-        component: () => import('../views/new_satellites/crawler.vue')
+        path: '/new_crawler',
+        name: 'New Crawler',
+        component: () => import('../views/new_satellites/new_crawler.vue')
     },
     {
-        path: '/new_satellites_pending',
-        name: 'Pending',
-        component: () => import('../views/new_satellites/new_satellites_pending.vue')
+        path: '/new_pending',
+        name: 'New Pending',
+        component: () => import('../views/new_satellites/new_pending.vue')
+    },
+    {
+        path: '/new_action',
+        name: 'New Action',
+        component: () => import('../views/new_satellites/new_action.vue')
+    },
+    {
+        path: '/new_edit',
+        name: 'New Edit',
+        component: () => import('../views/new_satellites/new_edit.vue')
+    },
+    {
+        path: '/duplicate_pending',
+        name: 'Duplicate Pending',
+        component: () => import('../views/duplicate_satellites/duplicate_pending.vue')
     }
 ]
 

@@ -22,40 +22,62 @@
                         <span>Master Database</span>
                     </template>
                     <el-menu-item index="/">
-                        <i class="el-icon-house"></i>
-                        Home Page
+                        <i class="el-icon-collection"></i>
+                        Master
                     </el-menu-item>
-                    <el-menu-item index="/edit">
-                        <i class="el-icon-edit"></i>
-                        Edit History
+                    <el-menu-item index="/pending">
+                        <i class="el-icon-refresh"></i>
+                        Pending
                     </el-menu-item>
-                    <el-menu-item index="/removed">
-                        <i class="el-icon-delete"></i>
-                        Removed
-                    </el-menu-item>
-                    <el-menu-item index="/history">
-                        <i class="el-icon-time"></i>
-                        History
-                    </el-menu-item>
+                    <el-menu-item-group title="History">
+                        <el-menu-item index="/edit">
+                            <i class="el-icon-edit"></i>
+                            Edit
+                        </el-menu-item>
+                        <el-menu-item index="/manual">
+                            <i class="el-icon-document"></i>
+                            Manual
+                        </el-menu-item>
+                    </el-menu-item-group>
                 </el-submenu>
                 <el-submenu index="2">
                     <template slot="title">
                         <i class="el-icon-menu"></i>
                         <span>New Satellites</span>
                     </template>
-                    <el-menu-item index="/crawler">
-                        <i class="el-icon-house"></i>
-                        Crawler Page
+                    <el-menu-item index="/new_crawler">
+                        <i class="el-icon-aim"></i>
+                        Crawler
                     </el-menu-item>
-                    <el-menu-item index="/new_satellites_pending">
-                        <i class="el-icon-edit"></i>
-                        Pending Page
+                    <el-menu-item index="/new_pending">
+                        <i class="el-icon-refresh"></i>
+                        Pending
                     </el-menu-item>
-                    <el-menu-item index="/new_satellites_record">
-                        <i class="el-icon-delete"></i>
-                        Record Page
+                    <el-menu-item-group title="History">
+                        <el-menu-item index="/new_edit">
+                            <i class="el-icon-edit"></i>
+                            Edit
+                        </el-menu-item>
+                        <el-menu-item index="/new_action">
+                            <i class="el-icon-time"></i>
+                            Action
+                        </el-menu-item>
+                    </el-menu-item-group>
+                </el-submenu>
+                <el-submenu index="3">
+                    <template slot="title">
+                        <i class="el-icon-menu"></i>
+                        <span>Duplicate Satellites</span>
+                    </template>
+                    <el-menu-item index="/duplicate_pending">
+                        <i class="el-icon-refresh"></i>
+                        Pending
                     </el-menu-item>
                 </el-submenu>
+                <el-menu-item index="/ucs_removed">
+                    <i class="el-icon-delete"></i>
+                    UCS Removed
+                </el-menu-item>
                 <el-menu-item @click="logout">
                     <i class="el-icon-switch-button"></i>
                     <span slot="title">Logout</span>
@@ -75,7 +97,7 @@
 
                 <!--          <i :class="collapseIcon" style="font-size: 26px" @click="handleCollapse"></i>-->
                 <el-breadcrumb separator-class="el-icon-arrow-right" style="margin-left: 20px">
-                    <el-breadcrumb-item :to="{ path: '/' }">History Page</el-breadcrumb-item>
+                    <el-breadcrumb-item :to="{ path: '/' }">Action Record</el-breadcrumb-item>
                 </el-breadcrumb>
                 <!-- Search input for satellite name -->
                 <el-input v-model="searchQuery" placeholder="Search by Cospar" style="width: 300px; margin-left: 20px;">
@@ -83,9 +105,13 @@
             </el-header>
             <el-main>
                 <el-table :data="filteredData" style="width: 100%">
+                    <el-table-column fixed prop="cospar" label="cospar"></el-table-column>
                     <el-table-column prop="name" label="Name"></el-table-column>
                     <el-table-column prop="date" label="Date" width="180"></el-table-column>
-                    <el-table-column fixed prop="cospar" label="cospar"></el-table-column>
+                    <el-table-column prop="action" label="action" :filters="actionFilters" :filter-method="filterHandler"
+                        filter-placement="bottom-start" width="180"></el-table-column>
+                    <el-table-column prop="reason" label="reason" :filters="removalReasonFilters"
+                        :filter-method="filterHandler" filter-placement="bottom-start"></el-table-column>
                     <el-table-column label="Operations" width="100">
                         <template slot-scope="scope">
                             <el-button type="text" size="small" @click="showDetails(scope.row)">Show</el-button>
@@ -93,10 +119,11 @@
                     </el-table-column>
                 </el-table>
             </el-main>
+
             <!-- Add a modal dialog for showing JCAT details -->
             <el-dialog :visible.sync="showJCATModal" title="Satellite Details">
                 <el-table :data="tableData" style="width: 100%">
-                    <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
+                    <el-table-column fixed prop="full_name" label="full_name" width="100"></el-table-column>
                     <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
                     <el-table-column v-for="column in editColumns" :key="column" :prop="column" :label="column" width="200">
                     </el-table-column>
@@ -105,7 +132,7 @@
                         width="350">
                     </el-table-column>
                     <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
-                    <el-table-column fixed="right" prop="removal_reason" label="Reason" width="200"></el-table-column>
+                    <el-table-column fixed="right" prop="removal_reason" label="Reason" width="100"></el-table-column>
                 </el-table>
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="showJCATModal = false">Close</el-button>
@@ -130,7 +157,16 @@ export default {
             tableData: [],
             columns: [], // This now includes all columns
             dynamicColumns: [],
-            editColumns: []
+            editColumns: [],
+            actionFilters: [
+                { text: 'approve', value: 'approve', column: 'action' },
+                { text: 'deny', value: 'deny', column: 'action' }
+            ],
+            removalReasonFilters: [
+                { text: 'Non-operational', value: 'Non-operational', column: 'reason' },
+                { text: 'Re-entered', value: 'Re-entered', column: 'reason' },
+                { text: 'Others', value: 'Others', column: 'reason' },
+            ]
         };
     },
     mounted() {
@@ -149,6 +185,19 @@ export default {
         },
     },
     methods: {
+        filterHandler(value, row, column) {
+            const property = column.property;
+            if (property === 'reason') {
+                if (value === 'Others') {
+                    // Filter out rows where reason is 'Others'
+                    return row.reason !== 'Non-operational' && row.reason !== 'Re-entered';
+                }
+            } else if (property === 'action') {
+                // Assuming 'action' is the correct property in your data
+                return row.action === value;
+            }
+        },
+
         logout() {
             localStorage.removeItem('authToken'); // 清除本地存储中的 token
             this.$router.push('/login'); // 重定向到登录页面
@@ -161,7 +210,7 @@ export default {
         async fetchHistory() {
             try {
                 const response = await axios.get(
-                    "http://localhost:8000/api/history" // Replace with your actual API endpoint
+                    "http://localhost:8000/api/new_history" // Replace with your actual API endpoint
                 );
                 this.historyData = response.data;
                 console.log(this.historyData);
@@ -171,7 +220,7 @@ export default {
         },
         async showDetails(row) {
             try {
-                const url = `http://localhost:8000/api/history/details?cospar=${encodeURIComponent(row.cospar)}`;
+                const url = `http://localhost:8000/api/ucs_new/history/details?cospar=${encodeURIComponent(row.cospar)}`;
                 const response = await axios.get(url);  // Add this line to make the API call
                 this.tableData = response.data;
 
