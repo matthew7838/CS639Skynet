@@ -10,12 +10,12 @@
             display: flex;
             align-items: center;
             justify-content: center;">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-          :default-active="$route.path">
+                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+                 :default-active="$route.path">
           <!-- Master Database Submenu -->
           <el-submenu index="1">
             <template slot="title">
@@ -75,6 +75,24 @@
               Pending
             </el-menu-item>
           </el-submenu>
+          <el-submenu index="4">
+            <template slot="title">
+              <i class="el-icon-download"></i>
+              <span>Export</span>
+            </template>
+            <el-menu-item @click.native="exportData('excel')">
+              <i class="el-icon-notebook-2"></i>
+              Export to Excel
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('pdf')">
+              <i class="el-icon-document"></i>
+              Export to PDF
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('csv')">
+              <i class="el-icon-document-copy"></i>
+              Export to CSV
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item index="/ucs_removed">
             <i class="el-icon-delete"></i>
             UCS Removed
@@ -122,10 +140,11 @@
     </el-container>
   </div>
 </template>
-  
+
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -145,7 +164,7 @@ export default {
     filteredData() {
       if (this.searchQuery) {
         return this.tableData.filter(item =>
-          item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
+            item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
       return this.tableData;
@@ -153,8 +172,11 @@ export default {
   },
   methods: {
     logout() {
-      localStorage.removeItem('authToken'); // 清除本地存储中的 token
-      this.$router.push('/login'); // 重定向到登录页面
+      localStorage.removeItem('authToken');
+      this.$router.push('/login');
+    },
+    exportData(format) {
+      window.location.href = `http://localhost:8000/api/export/${format}`;
     },
     getUsername() {
       // Retrieve the username from local storage
@@ -164,8 +186,7 @@ export default {
     async fetchEditRecords() {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/get-edit-records"
-
+            "http://localhost:8000/api/get-edit-records"
         );
         this.tableData = response.data;
         console.log(this.tableData);
@@ -176,7 +197,7 @@ export default {
   }
 };
 </script>
-  
+
 <style>
 .el-table {
   margin-top: 20px;
@@ -276,7 +297,7 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button+.el-button {
+.el-button + .el-button {
   margin-left: 0px;
 }
 

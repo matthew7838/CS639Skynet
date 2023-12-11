@@ -1,6 +1,12 @@
-from flask import Flask, request, jsonify
+import io
+from io import BytesIO
+
+import pandas as pd
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from models import db, Satellite_New, Satellite_Master, Master_Edit_Record, User, Satellite_Removed, ApproveDenyTable, ScrapeRecord, New_Edit_Record, Satellite_Duplicates, Master_Pending, Master_Manual_Record
 from functools import wraps
 import os
@@ -274,7 +280,64 @@ def get_satellites_removed():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/export/<string:format>')
+def export_data(format):
+    data = Satellite_Master.query.all()
+    df = pd.DataFrame([vars(d) for d in data])  # 转换为 DataFrame
 
+    if format == 'csv':
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False, encoding='utf-8')
+        csv_buffer.seek(0)
+        return send_file(
+            csv_buffer,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name='data.csv'
+        )
+    elif format == 'excel':
+        excel_buffer = BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False)
+        excel_buffer.seek(0)
+        return send_file(
+            excel_buffer,
+            mimetype='application/vnd.ms-excel',
+            as_attachment=True,
+            download_name='data.xlsx'
+        )
+    elif format == 'pdf':
+        pdf_buffer = create_pdf(data)
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='data.pdf'
+        )
+    else:
+        return "Invalid format", 400
+
+def create_pdf(data):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    c.drawString(100, height - 100, "UCS Master Data Export")
+
+    y_position = height - 130
+    for row in data:
+        row_data = {key: getattr(row, key) for key in row.__table__.columns.keys()}
+        text = ', '.join(f"{key}: {value}" for key, value in row_data.items())
+        c.drawString(50, y_position, text)
+        y_position -= 20
+
+        if y_position < 40:
+            c.showPage()
+            y_position = height - 50
+
+    c.save()
+    buffer.seek(0)
+    return buffer
 
 
 @app.route('/api/master_satellites_remove', methods=['POST'])

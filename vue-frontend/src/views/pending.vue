@@ -10,12 +10,12 @@
                             align-items: center;
                             justify-content: center;
                           ">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-          :default-active="$route.path">
+                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+                 :default-active="$route.path">
           <!-- Master Database Submenu -->
           <el-submenu index="1">
             <template slot="title">
@@ -79,6 +79,24 @@
             <i class="el-icon-delete"></i>
             UCS Removed
           </el-menu-item>
+          <el-submenu index="4">
+            <template slot="title">
+              <i class="el-icon-download"></i>
+              <span>Export</span>
+            </template>
+            <el-menu-item @click.native="exportData('excel')">
+              <i class="el-icon-notebook-2"></i>
+              Export to Excel
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('pdf')">
+              <i class="el-icon-document"></i>
+              Export to PDF
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('csv')">
+              <i class="el-icon-document-copy"></i>
+              Export to CSV
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item @click="logout">
             <i class="el-icon-switch-button"></i>
             <span slot="title">Logout</span>
@@ -102,10 +120,10 @@
 
           <!-- Search input for satellite name -->
           <el-input v-model="searchQuery" placeholder="Search by Cospar"
-            style="width: 300px; margin-left: 20px; margin-right: 20px">
+                    style="width: 300px; margin-left: 20px; margin-right: 20px">
           </el-input>
           Undo:
-          <el-switch v-model="showUndoColumn" style="margin-left: 10px; margin-right: 10px" />
+          <el-switch v-model="showUndoColumn" style="margin-left: 10px; margin-right: 10px"/>
         </el-header>
 
 
@@ -122,7 +140,8 @@
             </el-table-column>
             <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
             <el-table-column fixed="right" prop="removal_reason" label="removal_reason" :filters="removalReasonFilters"
-              :filter-method="filterHandler" filter-placement="bottom-start" width="150"></el-table-column>
+                             :filter-method="filterHandler" filter-placement="bottom-start"
+                             width="150"></el-table-column>
             <el-table-column fixed="right" label="Delete" width="120">
               <template slot-scope="scope">
                 <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeRow(scope.$index, scope.row)">
@@ -152,10 +171,12 @@
             </el-table-column>
             <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
             <el-table-column fixed="right" prop="removal_reason" label="removal_reason" :filters="removalReasonFilters"
-              :filter-method="filterHandler" filter-placement="bottom-start" width="150"></el-table-column>
+                             :filter-method="filterHandler" filter-placement="bottom-start"
+                             width="150"></el-table-column>
             <el-table-column fixed="right" label="Operations" width="120">
               <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-refresh" size="mini" @click="undoRemove(scope.$index, scope.row)">
+                <el-button type="primary" icon="el-icon-refresh" size="mini"
+                           @click="undoRemove(scope.$index, scope.row)">
                   Undo
                 </el-button>
               </template>
@@ -172,9 +193,10 @@
     </el-container>
   </div>
 </template>
-  
+
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
@@ -190,9 +212,9 @@ export default {
       editColumns: [],
       showUndoColumn: false,
       removalReasonFilters: [
-        { text: 'Non-operational', value: 'Non-operational', column: 'removal_reason' },
-        { text: 'Re-entered', value: 'Re-entered', column: 'removal_reason' },
-        { text: 'Others', value: 'Others', column: 'removal_reason' },
+        {text: 'Non-operational', value: 'Non-operational', column: 'removal_reason'},
+        {text: 'Re-entered', value: 'Re-entered', column: 'removal_reason'},
+        {text: 'Others', value: 'Others', column: 'removal_reason'},
       ],
     };
   },
@@ -205,7 +227,7 @@ export default {
     filteredData() {
       if (this.searchQuery) {
         return this.tableData.filter(item =>
-          item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
+            item.cospar.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
       return this.tableData;
@@ -213,34 +235,37 @@ export default {
   },
   methods: {
     unremoveRow(row) {
-      axios.post('http://localhost:8000/api/pending_unremove_satellite', { cospar: row.cospar })
-        .then(response => {
-          // Handle success
-          this.$message({
-            message: 'Satellite un-removed successfully',
-            type: 'success',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+      axios.post('http://localhost:8000/api/pending_unremove_satellite', {cospar: row.cospar})
+          .then(response => {
+            // Handle success
+            this.$message({
+              message: 'Satellite un-removed successfully',
+              type: 'success',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
+            this.fetchRemovedSatellites();
+            // You might want to refresh the table data here
+          })
+          .catch(error => {
+            // Handle error
+            console.error('Error un-removing the satellite:', error);
+            this.$message({
+              message: 'Failed to un-remove satellite.',
+              type: 'error',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
           });
-          this.fetchRemovedSatellites();
-          // You might want to refresh the table data here
-        })
-        .catch(error => {
-          // Handle error
-          console.error('Error un-removing the satellite:', error);
-          this.$message({
-            message: 'Failed to un-remove satellite.',
-            type: 'error',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-          });
-        });
     },
     filterHandler(value, row, column) {
       const property = column.property;
       return value === 'Others' ? row.removal_reason !== 'Non-operational' && row.removal_reason !== 'Re-entry' : row.removal_reason === value;
     },
     logout() {
-      localStorage.removeItem('authToken'); // 清除本地存储中的 token
-      this.$router.push('/login'); // 重定向到登录页面
+      localStorage.removeItem('authToken');
+      this.$router.push('/login');
+    },
+    exportData(format) {
+      window.location.href = `http://localhost:8000/api/export/${format}`;
     },
     getUsername() {
       // Retrieve the username from local storage
@@ -258,7 +283,7 @@ export default {
 
           // Define editColumns as all columns that are not dynamic or manual
           this.editColumns = allColumns.filter(col =>
-            !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+              !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
           );
         }
         console.log(this.tableData);
@@ -276,7 +301,7 @@ export default {
       this.removedItems.splice(index, 1); // Remove the row from the removed items
       // You may also want to handle the restoration in your backend/database
     },
-    tableRowClassName({ row, rowIndex }) {
+    tableRowClassName({row, rowIndex}) {
       // Here, you can specify a condition to highlight rows that need attention
       if (rowIndex === 2) {
         return 'highlight-row';
@@ -307,34 +332,34 @@ export default {
         updates: updates,
         name: this.username // Include the username in the request payload
       })
-        .then(response => {
-          console.log(response.data);
-          // Handle the response, e.g., show a success message
-          this.$message({
-            message: 'Changes have been published successfully.',
-            type: 'success',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-          });
+          .then(response => {
+            console.log(response.data);
+            // Handle the response, e.g., show a success message
+            this.$message({
+              message: 'Changes have been published successfully.',
+              type: 'success',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
 
 
-          // Clear the removedItems if they have been successfully published
-          this.removedItems = [];
-        })
-        .catch(error => {
-          console.error('There was an error publishing the changes:', error);
-          // Handle the error, e.g., show an error message
-          this.$message({
-            message: 'Failed to publish changes.',
-            type: 'error',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            // Clear the removedItems if they have been successfully published
+            this.removedItems = [];
+          })
+          .catch(error => {
+            console.error('There was an error publishing the changes:', error);
+            // Handle the error, e.g., show an error message
+            this.$message({
+              message: 'Failed to publish changes.',
+              type: 'error',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
           });
-        });
 
     },
   },
 };
 </script>
-  
+
 <style>
 .el-table {
   margin-top: 20px;

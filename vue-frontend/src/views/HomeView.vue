@@ -10,12 +10,12 @@
             align-items: center;
             justify-content: center;
           ">
-          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px" />
+          <img src="@/assets/UCS-Logo.png" alt="" style="width: 120px; height: 60px"/>
         </div>
 
         <el-menu :collapse="isCollapse" :collapse-transition="false" router background-color="#001529"
-          text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
-          :default-active="$route.path">
+                 text-color="rgba(255, 255, 255, 0.65)" active-text-color="#fff" style="border: none"
+                 :default-active="$route.path">
           <!-- Master Database Submenu -->
           <el-submenu index="1">
             <template slot="title">
@@ -77,6 +77,24 @@
             <el-menu-item-group title="History">
             </el-menu-item-group>
           </el-submenu>
+          <el-submenu index="4">
+            <template slot="title">
+              <i class="el-icon-download"></i>
+              <span>Export</span>
+            </template>
+            <el-menu-item @click.native="exportData('excel')">
+              <i class="el-icon-notebook-2"></i>
+              Export to Excel
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('pdf')">
+              <i class="el-icon-document"></i>
+              Export to PDF
+            </el-menu-item>
+            <el-menu-item @click.native="exportData('csv')">
+              <i class="el-icon-document-copy"></i>
+              Export to CSV
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item index="/ucs_removed">
             <i class="el-icon-delete"></i>
             UCS Removed
@@ -103,11 +121,11 @@
 
           <!-- Search input for satellite name -->
           <el-input v-model="searchQuery" placeholder="Search by Cospar"
-            style="width: 300px; margin-left: 20px; margin-right: 20px">
+                    style="width: 300px; margin-left: 20px; margin-right: 20px">
           </el-input>
 
           Remove:
-          <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px" />
+          <el-switch v-model="showRemoveColumn" style="margin-left: 10px; margin-right: 10px"/>
 
           <!-- Add Row Button -->
           <el-button @click="showAddRowDialog = true" type="primary">Add New Row</el-button>
@@ -162,18 +180,19 @@
             <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column" width="350">
             </el-table-column>
             <el-table-column prop="data_status" label="data_status" width="150" :filters="dataStatusFilters"
-              :filter-method="filterHandler" filter-placement="bottom-start">
+                             :filter-method="filterHandler" filter-placement="bottom-start">
             </el-table-column>
             <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
             <el-table-column fixed="right" label="Edit">
               <template slot-scope="scope">
                 <el-button v-if="!scope.row.editing" size="mini" class="operation-button"
-                  @click="startEdit(scope.row)">Edit
+                           @click="startEdit(scope.row)">Edit
                 </el-button>
-                <el-button v-if="scope.row.editing" size="mini" class="operation-button" @click="saveEdit(scope.row)">Save
+                <el-button v-if="scope.row.editing" size="mini" class="operation-button" @click="saveEdit(scope.row)">
+                  Save
                 </el-button>
                 <el-button v-if="scope.row.editing" size="mini" class="operation-button"
-                  @click="cancelEdit(scope.row)">Cancel
+                           @click="cancelEdit(scope.row)">Cancel
                 </el-button>
               </template>
             </el-table-column>
@@ -187,8 +206,9 @@
         </el-main>
 
         <el-pagination @size-change="handleSizeChange" @current-change="handlePageChange" :current-page="currentPage"
-          :page-sizes="[10, 20, 30, 40]" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper"
-          :total="totalItems">
+                       :page-sizes="[10, 20, 30, 40]" :page-size="pageSize"
+                       layout="total, sizes, prev, pager, next, jumper"
+                       :total="totalItems">
         </el-pagination>
 
         <!-- Add Row Dialog -->
@@ -197,7 +217,7 @@
             <el-row :gutter="15">
               <!-- Dynamically create input fields for each column, excluding 'editing' and 'data_status', four per row -->
               <el-col :span="6" v-for="(value, key) in newRow" :key="key"
-                v-if="key !== 'editing' && key !== 'data_status'">
+                      v-if="key !== 'editing' && key !== 'data_status'">
                 <el-form-item :label="key">
                   <el-input v-model="newRow[key]" placeholder="Enter value"></el-input>
                 </el-form-item>
@@ -219,7 +239,7 @@
           </el-radio-group>
 
           <el-input v-if="selectedOption === 'Others'" v-model="otherReason"
-            placeholder="Please specify the reason"></el-input>
+                    placeholder="Please specify the reason"></el-input>
 
           <span slot="footer" class="dialog-footer">
             <el-button @click="isRemoveModalVisible = false">Cancel</el-button>
@@ -264,7 +284,7 @@ export default {
       newRow: {},
       currentDataStatusFilter: null,
       dataStatusFilters: [
-        { text: 'Highlighted', value: 2, column: 'data_status' },
+        {text: 'Highlighted', value: 2, column: 'data_status'},
       ],
     };
   },
@@ -349,34 +369,34 @@ export default {
       }
 
       // Prepare the data to be sent
-      const dataToSend = { ...this.newRow, username: this.username };  // Include the username
+      const dataToSend = {...this.newRow, username: this.username};  // Include the username
       console.log('Data to send:', dataToSend);
 
       // Send data to the backend
       axios.post('http://localhost:8000/api/manual-add-stat', dataToSend)
-        .then(response => {
-          // Handle success response
-          this.$message({
-            message: 'New row added successfully.',
-            type: 'success',
-            duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+          .then(response => {
+            // Handle success response
+            this.$message({
+              message: 'New row added successfully.',
+              type: 'success',
+              duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+            });
+            // Optionally, add the new row to the tableData if the backend doesn't return the updated list
+            this.tableData.push({...dataToSend, username: this.username});  // Include the username in the table data
+            // Close the dialog and reset newRow
+            this.showAddRowDialog = false;
+            this.newRow = {...this.newRowTemplate}; // Reset newRow for next use
+            this.fetchSatellites();
+          })
+          .catch(error => {
+            // Handle error response
+            this.$message({
+              message: 'Failed to add new row.',
+              type: 'error',
+              duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
+            });
+            console.error('Error:', error);
           });
-          // Optionally, add the new row to the tableData if the backend doesn't return the updated list
-          this.tableData.push({ ...dataToSend, username: this.username });  // Include the username in the table data
-          // Close the dialog and reset newRow
-          this.showAddRowDialog = false;
-          this.newRow = { ...this.newRowTemplate }; // Reset newRow for next use
-          this.fetchSatellites();
-        })
-        .catch(error => {
-          // Handle error response
-          this.$message({
-            message: 'Failed to add new row.',
-            type: 'error',
-            duration: 2000  // Message will disappear after 2000 milliseconds (2 seconds)
-          });
-          console.error('Error:', error);
-        });
     },
     isEditable(column) {
       const nonEditableColumns = ['cospar', 'source'];
@@ -399,38 +419,38 @@ export default {
       const payload = {
         cospar: this.currentRow.cospar, // Assuming 'satellite_name' is the identifier
         reason:
-          this.selectedOption === "Others"
-            ? this.otherReason
-            : this.selectedOption,
+            this.selectedOption === "Others"
+                ? this.otherReason
+                : this.selectedOption,
         old_data_status: this.currentRow.data_status
       };
 
 
       // Send an AJAX request
       axios
-        .post("http://localhost:8000/api/remove-sat", payload)
-        .then((response) => {
-          // Handle success response
-          this.$message({
-            message: 'Satellite has been removed',
-            type: 'success',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-          });
+          .post("http://localhost:8000/api/remove-sat", payload)
+          .then((response) => {
+            // Handle success response
+            this.$message({
+              message: 'Satellite has been removed',
+              type: 'success',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
 
-          // Remove the row from the local data, if needed
-          const index = this.tableData.indexOf(this.currentRow);
-          if (index > -1) {
-            this.tableData.splice(index, 1);
-          }
-        })
-        .catch((error) => {
-          // Handle error response
-          this.$message({
-            message: 'Failed to remove',
-            type: 'error',
-            duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            // Remove the row from the local data, if needed
+            const index = this.tableData.indexOf(this.currentRow);
+            if (index > -1) {
+              this.tableData.splice(index, 1);
+            }
+          })
+          .catch((error) => {
+            // Handle error response
+            this.$message({
+              message: 'Failed to remove',
+              type: 'error',
+              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            });
           });
-        });
 
       // Reset modal state and hide it
       this.isRemoveModalVisible = false;
@@ -438,8 +458,11 @@ export default {
       this.otherReason = "";
     },
     logout() {
-      localStorage.removeItem("authToken"); // 清除本地存储中的 token
-      this.$router.push("/login"); // 重定向到登录页面
+      localStorage.removeItem('authToken');
+      this.$router.push('/login');
+    },
+    exportData(format) {
+      window.location.href = `http://localhost:8000/api/export/${format}`;
     },
     getUsername() {
       // Retrieve the username from local storage
@@ -458,7 +481,7 @@ export default {
             data_status: dataStatusFilter // Include the filter in the request
           }
         });
-        this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
+        this.tableData = response.data.data.map(row => ({...row, editing: false}));
         this.totalItems = response.data.total_count;
         if (this.tableData.length > 0) {
           const allColumns = Object.keys(this.tableData[0]);
@@ -467,7 +490,7 @@ export default {
 
           // Define editColumns as all columns that are not dynamic or manual
           this.editColumns = allColumns.filter(col =>
-            !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+              !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
           );
           this.initializeNewRow();
         }
@@ -487,7 +510,7 @@ export default {
       this.tableData.splice(index, 1); // Remove the row
       // You may also want to delete the row from your backend/database
     },
-    tableRowClassName({ row, rowIndex }) {
+    tableRowClassName({row, rowIndex}) {
       // Here, you can specify a condition to highlight rows that need attention
       if (rowIndex === 2) {
         return "highlight-row";
@@ -517,26 +540,26 @@ export default {
       if (edit_records.length > 0) {
         // Send the edit records to the backend
         axios
-          .post("http://localhost:8000/api/edit-data", {
-            edit_records: edit_records,
-            name: this.username,
-          })
-          .then((response) => {
-            this.$message({
-              message: 'Satellite has been edit',
-              type: 'success',
-              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
-            });
+            .post("http://localhost:8000/api/edit-data", {
+              edit_records: edit_records,
+              name: this.username,
+            })
+            .then((response) => {
+              this.$message({
+                message: 'Satellite has been edit',
+                type: 'success',
+                duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+              });
 
-          })
-          .catch((error) => {
-            console.error("Error sending edit records", error);
-            this.$message({
-              message: 'Failed to edit',
-              type: 'error',
-              duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+            })
+            .catch((error) => {
+              console.error("Error sending edit records", error);
+              this.$message({
+                message: 'Failed to edit',
+                type: 'error',
+                duration: 2000  // Message will disappear after 5000 milliseconds (5 seconds)
+              });
             });
-          });
       }
       // Clear the backup since changes are saved
       this.backupRow = null;
@@ -683,7 +706,7 @@ export default {
   /* Remove bottom margin from the last button */
 }
 
-.el-button+.el-button {
+.el-button + .el-button {
   margin-left: 0px;
 }
 
