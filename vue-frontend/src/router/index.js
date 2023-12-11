@@ -38,6 +38,11 @@ const routes = [
         path: '/ucs_removed',
         name: 'UCS Removed',
         component: () => import('../views/ucs_removed.vue')
+    },
+    {
+        path: '/version',
+        name: 'Version Control',
+        component: () => import('../views/Version.vue')
     }
 ]
 

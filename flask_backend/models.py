@@ -288,3 +288,14 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class TestVersionControl(db.Model):
+    __tablename__ = 'test_version_control'
+    id = db.Column(db.Integer, primary_key=True)
+    version = db.Column(db.String)
+    timestamp = db.Column(db.DateTime)
+
+
+class UcsMaster(db.Model):
+    __tablename__ = 'ucs_master'

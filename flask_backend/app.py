@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from models import db, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord, Satellite_Removed
+from models import db, Satellite_New, Satellite_Master, SatelliteEditRecord, RecordTable, User, SatelliteRemovalRecord, \
+    Satellite_Removed, TestVersionControl, UcsMaster
 from functools import wraps
 import os
 import traceback
@@ -91,6 +92,25 @@ def token_required(f):
 
         return f(*args, **kwargs)
     return decorated
+
+
+@app.route('/api/get-versions', methods=['GET'])
+def get_versions():
+    versions = TestVersionControl.query.all()
+    return jsonify([{'version': v.version, 'timestamp': v.timestamp} for v in versions])
+
+
+@app.route('/api/rollback', methods=['POST'])
+def rollback():
+    version_info = request.json['version']
+    version_data = TestVersionControl.query.filter_by(version=version_info).first()
+
+    if version_data:
+        UcsMaster.query.delete()
+        db.session.commit()
+        return jsonify({'message': 'Rollback successful'})
+    else:
+        return jsonify({'message': 'Version not found'}), 404
 
 
 @app.route('/some-protected-route')

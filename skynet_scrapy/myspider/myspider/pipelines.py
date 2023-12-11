@@ -56,7 +56,8 @@ class OrbitalfocusPipeline:
                 if field_name is 'date':
                     value = adapter.get(field_name)
                     parsed_date = datetime.strptime(value, '%Y %b %d')
-                    value = parsed_date.strftime('%-m/%-d/%y')
+                    # value = parsed_date.strftime('%-m/%-d/%y')
+                    value = parsed_date.strftime('%m/%d/%y')
                     adapter[field_name] = value
             self.cur.execute(""" insert into orbitalfocus (cat_no, designation, name, date) values (%s, %s, %s, %s)""",
                              (
@@ -114,7 +115,8 @@ class ReentrypredictorPipeline:
                 if field_name is 'predicted_reentry_date':
                     value = adapter.get(field_name)
                     parsed_date = datetime.strptime(value, '%b %d, %Y %H:%M:%S')
-                    value = parsed_date.strftime('%-m/%-d/%y')
+                    # value = parsed_date.strftime('%-m/%-d/%y')
+                    value = parsed_date.strftime('%m/%d/%y')
                     adapter[field_name] = value
             self.cur.execute(
                 """insert into aero (object, mission, reentry_type, launch_date, predicted_reentry_date, norad_num, 
@@ -212,7 +214,8 @@ class Planet4589Pipeline:
                 if field_name is 'LDate':
                     value = adapter.get(field_name)
                     parsed_date = datetime.strptime(value, '%Y %b %d')
-                    value = parsed_date.strftime('%-m/%-d/%y')
+                    # value = parsed_date.strftime('%-m/%-d/%y')
+                    value = parsed_date.strftime('%m/%d/%y')
                     adapter[field_name] = value
             self.cur.execute(
                 """insert into planet4589 (jcat, satcat, piece, type, name, plname, ldate, parent, sdate, primry, 
