@@ -150,6 +150,7 @@ class UcsdataSpider(scrapy.Spider):
         #change data_status = 2 for re-entered sats
         cospar_list = self.gather_reentry_sats()
         df.loc[df['cospar'].isin(cospar_list), 'data_status'] = 2
+        df['id'] = df.reset_index().index + 1
         filtered_df_cospar = df[df['data_status'] == 2]
         filtered_df_dupes = df[df['data_status'] == 5]
         #print(filtered_df_cospar)

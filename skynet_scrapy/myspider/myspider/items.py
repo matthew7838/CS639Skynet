@@ -106,6 +106,7 @@ class UcsdataItem(scrapy.Item):
     additional_source = scrapy.Field()
     data_status = scrapy.Field()
     source_used_for_orbital_data = scrapy.Field()
+    id = scrapy.Field()
 
 class NtwoYOItem(scrapy.Item):
     NORAD = scrapy.Field()

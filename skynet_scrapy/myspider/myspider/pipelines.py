@@ -356,7 +356,8 @@ class UcsdataPipeleine:
                         source text,
                         additional_source text,
                         data_status integer,
-                        source_used_for_orbital_data text)""")
+                        source_used_for_orbital_data text,
+                        id text primary key)""")
         #self.connection.commit()
 
 
@@ -408,9 +409,10 @@ class UcsdataPipeleine:
                         source,
                         additional_source,
                         data_status,
-                        source_used_for_orbital_data
+                        source_used_for_orbital_data,
+                        id
                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
                         item['full_name'],
                         item['official_name'],
@@ -442,7 +444,8 @@ class UcsdataPipeleine:
                         item['source'],
                         item['additional_source'],
                         item['data_status'],
-                        item['source_used_for_orbital_data']
+                        item['source_used_for_orbital_data'],
+                        item['id']
                     ))
             else:
                 self.cur.execute(
@@ -479,7 +482,8 @@ class UcsdataPipeleine:
                         data_status,
                         source_used_for_orbital_data
                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (cospar) DO NOTHING""",
                     (
                         item['full_name'],
                         item['official_name'],
