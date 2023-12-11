@@ -23,6 +23,42 @@ class Planet4589spiderSpider(scrapy.Spider):
         self.processed_count = 0
         self.scraped_items = []
 
+    def get_orbit_type(self, dataframe):
+        orbit_mapping = {
+        'ATM': 'Atmospheric',
+        'SO': 'Suborbital',
+        'TA': 'Trans-Atm.',
+        'LLEO/E': 'Lower LEO/Equatorial',
+        'LLEO/I': 'Lower LEO/Intermediate',
+        'LLEO/P': 'Lower LEO/Polar',
+        'LLEO/S': 'Lower LEO/Sun-Sync',
+        'LLEO/R': 'Lower LEO/Retrograde',
+        'LEO/E': 'Upper LEO/Equatorial',
+        'LEO/I': 'Upper LEO/Intermediate',
+        'LEO/P': 'Upper LEO/Polar',
+        'LEO/S': 'Upper LEO/Sun-Sync',
+        'LEO/R': 'Upper LEO/Retrograde',
+        'MEO': 'Medium Earth Orbit',
+        'HEO': 'Highly Elliptical Orbit',
+        'HEO/M': 'Molniya',
+        'GTO': 'Geotransfer',
+        'GEO/S': 'Stationary',
+        'GEO/I': 'Inclined GEO',
+        'GEO/T': 'Synchronous',
+        'GEO/D': 'Drift GEO',
+        'GEO/SI': 'Inclined GEO',
+        'GEO/ID': 'Inclined Drift',
+        'GEO/NS': 'Near-sync',
+        'VHEO': 'Very High Earth Orbit',
+        'DSO': 'Deep Space Orbit',
+        'CLO': 'Cislunar/Translunar',
+        'EEO': 'Earth Escape',
+        'HCO': 'Heliocentric',
+        'PCO': 'Planetocentric',
+        'SSE': 'Solar System Escape'
+        }
+        dataframe['orbit_type'] = dataframe['OpOrbit'].map(orbit_mapping)
+
     def parse(self, response):
         #set default data_status
         default_data_status = 10
@@ -37,6 +73,7 @@ class Planet4589spiderSpider(scrapy.Spider):
         df['data_status'] = default_data_status
         df['source_used_for_orbital_data'] = source_string
         df.loc[df['Status'] == 'R', 'data_status'] = 2
+        self.get_orbit_type(df)
         # df = df[df['Status'].str.startswith('O')]
         #print(f'length = {len(df)}')
         #print(df)
