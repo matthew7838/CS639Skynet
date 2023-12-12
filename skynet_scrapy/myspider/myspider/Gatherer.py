@@ -100,30 +100,7 @@ class Gatherer:
                 source_used_for_orbital_data,
                 data_status         
             FROM planet4589
-            ON CONFLICT (cospar) DO UPDATE
-            SET
-                full_name = EXCLUDED.full_name,
-                official_name = EXCLUDED.official_name,
-                owner_country = EXCLUDED.owner_country,
-                owner = EXCLUDED.owner,
-                users = EXCLUDED.users,
-                orbit_class = EXCLUDED.orbit_class,
-                orbit_type = EXCLUDED.orbit_type,
-                in_geo = EXCLUDED.in_geo,
-                perigee = EXCLUDED.perigee,
-                apogee = EXCLUDED.apogee,
-                inclination = EXCLUDED.inclination,
-                period = EXCLUDED.period,
-                mass = EXCLUDED.mass,
-                dry_mass = EXCLUDED.dry_mass,
-                launch_date = EXCLUDED.launch_date,
-                contractor = EXCLUDED.contractor,
-                launch_site = EXCLUDED.launch_site,
-                launch_vehicle = EXCLUDED.launch_vehicle,
-                cospar = EXCLUDED.cospar,
-                norad = EXCLUDED.norad,
-                source_used_for_orbital_data = EXCLUDED.source_used_for_orbital_data,
-                data_status = EXCLUDED.data_status
+            ON CONFLICT (cospar) DO NOTHING
         """
         try:
             self.cur.execute(sql_query)
@@ -140,3 +117,26 @@ class Gatherer:
 
 
 
+            # SET
+            #     full_name = EXCLUDED.full_name,
+            #     official_name = EXCLUDED.official_name,
+            #     owner_country = EXCLUDED.owner_country,
+            #     owner = EXCLUDED.owner,
+            #     users = EXCLUDED.users,
+            #     orbit_class = EXCLUDED.orbit_class,
+            #     orbit_type = EXCLUDED.orbit_type,
+            #     in_geo = EXCLUDED.in_geo,
+            #     perigee = EXCLUDED.perigee,
+            #     apogee = EXCLUDED.apogee,
+            #     inclination = EXCLUDED.inclination,
+            #     period = EXCLUDED.period,
+            #     mass = EXCLUDED.mass,
+            #     dry_mass = EXCLUDED.dry_mass,
+            #     launch_date = EXCLUDED.launch_date,
+            #     contractor = EXCLUDED.contractor,
+            #     launch_site = EXCLUDED.launch_site,
+            #     launch_vehicle = EXCLUDED.launch_vehicle,
+            #     cospar = EXCLUDED.cospar,
+            #     norad = EXCLUDED.norad,
+            #     source_used_for_orbital_data = EXCLUDED.source_used_for_orbital_data,
+            #     data_status = EXCLUDED.data_status
