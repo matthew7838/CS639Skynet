@@ -10,6 +10,10 @@ import pandas as pd
 from datetime import datetime
 import psycopg2
 from psycopg2 import IntegrityError
+import logging
+import traceback
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class OrbitalfocusPipeline:
@@ -372,155 +376,792 @@ class UcsdataPipeleine:
             self.cur.close()
             self.connection.close()
 
+    # def process_item(self, item, spider):
+    #     try:
+    #         adapter = ItemAdapter(item)
+    #         field_names = adapter.field_names()
+    #         if int(item['data_status']) == 5:
+    #             self.cur.execute(
+    #                 """ insert into ucs_master_duplicates (
+    #                     full_name,
+    #                     official_name,
+    #                     country,
+    #                     owner_country,
+    #                     owner,
+    #                     users,
+    #                     purpose,
+    #                     detail_purpose,
+    #                     orbit_class,
+    #                     orbit_type,
+    #                     in_geo,
+    #                     perigee,
+    #                     apogee,
+    #                     eccentricity,
+    #                     inclination,
+    #                     period,
+    #                     mass,
+    #                     dry_mass,
+    #                     power,
+    #                     launch_date,
+    #                     expected_lifetime,
+    #                     contractor,
+    #                     contractor_country,
+    #                     launch_site,
+    #                     launch_vehicle,
+    #                     cospar,
+    #                     norad,
+    #                     source,
+    #                     additional_source,
+    #                     data_status,
+    #                     source_used_for_orbital_data,
+    #                     id
+    #                 ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+    #                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+    #                 (
+    #                     item['full_name'],
+    #                     item['official_name'],
+    #                     item['country'],
+    #                     item['owner_country'],
+    #                     item['owner'],
+    #                     item['users'],
+    #                     item['purpose'],
+    #                     item['detail_purpose'],
+    #                     item['orbit_class'],
+    #                     item['orbit_type'],
+    #                     item['in_geo'],
+    #                     item['perigee'],
+    #                     item['apogee'],
+    #                     item['eccentricity'],
+    #                     item['inclination'],
+    #                     item['period'],
+    #                     item['mass'],
+    #                     item['dry_mass'],
+    #                     item['power'],
+    #                     item['launch_date'],
+    #                     item['expected_lifetime'],
+    #                     item['contractor'],
+    #                     item['contractor_country'],
+    #                     item['launch_site'],
+    #                     item['launch_vehicle'],
+    #                     item['cospar'],
+    #                     item['norad'],
+    #                     item['source'],
+    #                     item['additional_source'],
+    #                     item['data_status'],
+    #                     item['source_used_for_orbital_data'],
+    #                     item['id']
+    #                 ))
+    #         else:
+    #             self.cur.execute(
+    #                 """ insert into ucs_master (
+    #                     full_name,
+    #                     official_name,
+    #                     country,
+    #                     owner_country,
+    #                     owner,
+    #                     users,
+    #                     purpose,
+    #                     detail_purpose,
+    #                     orbit_class,
+    #                     orbit_type,
+    #                     in_geo,
+    #                     perigee,
+    #                     apogee,
+    #                     eccentricity,
+    #                     inclination,
+    #                     period,
+    #                     mass,
+    #                     dry_mass,
+    #                     power,
+    #                     launch_date,
+    #                     expected_lifetime,
+    #                     contractor,
+    #                     contractor_country,
+    #                     launch_site,
+    #                     launch_vehicle,
+    #                     cospar,
+    #                     norad,
+    #                     source,
+    #                     additional_source,
+    #                     data_status,
+    #                     source_used_for_orbital_data
+    #                 ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+    #                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    #                 ON CONFLICT (cospar) DO NOTHING""",
+    #                 (
+    #                     item['full_name'],
+    #                     item['official_name'],
+    #                     item['country'],
+    #                     item['owner_country'],
+    #                     item['owner'],
+    #                     item['users'],
+    #                     item['purpose'],
+    #                     item['detail_purpose'],
+    #                     item['orbit_class'],
+    #                     item['orbit_type'],
+    #                     item['in_geo'],
+    #                     item['perigee'],
+    #                     item['apogee'],
+    #                     item['eccentricity'],
+    #                     item['inclination'],
+    #                     item['period'],
+    #                     item['mass'],
+    #                     item['dry_mass'],
+    #                     item['power'],
+    #                     item['launch_date'],
+    #                     item['expected_lifetime'],
+    #                     item['contractor'],
+    #                     item['contractor_country'],
+    #                     item['launch_site'],
+    #                     item['launch_vehicle'],
+    #                     item['cospar'],
+    #                     item['norad'],
+    #                     item['source'],
+    #                     item['additional_source'],
+    #                     item['data_status'],
+    #                     item['source_used_for_orbital_data']
+    #                 ))
+    #         self.connection.commit()
+    #     except Exception as e:
+    #         self.connection.rollback()
+    #         print(f'Error during item processing: {e}')
+    #     return item
+            
+    # def process_item(self, item, spider):
+    #     try:
+    #         adapter = ItemAdapter(item)
+    #         field_names = adapter.field_names()
+    #         self.cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'ucs_removed_satellites')")
+    #         table_exists = self.cur.fetchone()[0]
+    #         if table_exists:
+    #             logging.debug("Table 'ucs_removed_satellites' exists.")
+    #             if int(item['data_status']) == 5:
+    #                 logging.debug("Inserting into ucs_master_duplicates.(table exists)")
+    #                 self.cur.execute(
+    #                     """ insert into ucs_master_duplicates (
+    #                         full_name,
+    #                         official_name,
+    #                         country,
+    #                         owner_country,
+    #                         owner,
+    #                         users,
+    #                         purpose,
+    #                         detail_purpose,
+    #                         orbit_class,
+    #                         orbit_type,
+    #                         in_geo,
+    #                         perigee,
+    #                         apogee,
+    #                         eccentricity,
+    #                         inclination,
+    #                         period,
+    #                         mass,
+    #                         dry_mass,
+    #                         power,
+    #                         launch_date,
+    #                         expected_lifetime,
+    #                         contractor,
+    #                         contractor_country,
+    #                         launch_site,
+    #                         launch_vehicle,
+    #                         cospar,
+    #                         norad,
+    #                         source,
+    #                         additional_source,
+    #                         data_status,
+    #                         source_used_for_orbital_data,
+    #                         id
+    #                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+    #                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+    #                     (
+    #                         item['full_name'],
+    #                         item['official_name'],
+    #                         item['country'],
+    #                         item['owner_country'],
+    #                         item['owner'],
+    #                         item['users'],
+    #                         item['purpose'],
+    #                         item['detail_purpose'],
+    #                         item['orbit_class'],
+    #                         item['orbit_type'],
+    #                         item['in_geo'],
+    #                         item['perigee'],
+    #                         item['apogee'],
+    #                         item['eccentricity'],
+    #                         item['inclination'],
+    #                         item['period'],
+    #                         item['mass'],
+    #                         item['dry_mass'],
+    #                         item['power'],
+    #                         item['launch_date'],
+    #                         item['expected_lifetime'],
+    #                         item['contractor'],
+    #                         item['contractor_country'],
+    #                         item['launch_site'],
+    #                         item['launch_vehicle'],
+    #                         item['cospar'],
+    #                         item['norad'],
+    #                         item['source'],
+    #                         item['additional_source'],
+    #                         item['data_status'],
+    #                         item['source_used_for_orbital_data'],
+    #                         item['id']
+    #                     ))
+    #             else:
+    #                 logging.debug("Inserting into ucs_master.(table exists)")
+                    
+    #                 self.cur.execute(
+    #                     """ insert into ucs_master (
+    #                         full_name,
+    #                         official_name,
+    #                         country,
+    #                         owner_country,
+    #                         owner,
+    #                         users,
+    #                         purpose,
+    #                         detail_purpose,
+    #                         orbit_class,
+    #                         orbit_type,
+    #                         in_geo,
+    #                         perigee,
+    #                         apogee,
+    #                         eccentricity,
+    #                         inclination,
+    #                         period,
+    #                         mass,
+    #                         dry_mass,
+    #                         power,
+    #                         launch_date,
+    #                         expected_lifetime,
+    #                         contractor,
+    #                         contractor_country,
+    #                         launch_site,
+    #                         launch_vehicle,
+    #                         cospar,
+    #                         norad,
+    #                         source,
+    #                         additional_source,
+    #                         data_status,
+    #                         source_used_for_orbital_data
+    #                     )
+    #                     SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+    #                     WHERE NOT EXISTS(
+    #                         SELECT 1
+    #                         FROM ucs_removed_satellites
+    #                         WHERE ucs_removed_satellites.cospar = %s
+    #                     )
+    #                     ON CONFLICT (cospar) DO NOTHING""",
+    #                     (
+    #                         item['full_name'],
+    #                         item['official_name'],
+    #                         item['country'],
+    #                         item['owner_country'],
+    #                         item['owner'],
+    #                         item['users'],
+    #                         item['purpose'],
+    #                         item['detail_purpose'],
+    #                         item['orbit_class'],
+    #                         item['orbit_type'],
+    #                         item['in_geo'],
+    #                         item['perigee'],
+    #                         item['apogee'],
+    #                         item['eccentricity'],
+    #                         item['inclination'],
+    #                         item['period'],
+    #                         item['mass'],
+    #                         item['dry_mass'],
+    #                         item['power'],
+    #                         item['launch_date'],
+    #                         item['expected_lifetime'],
+    #                         item['contractor'],
+    #                         item['contractor_country'],
+    #                         item['launch_site'],
+    #                         item['launch_vehicle'],
+    #                         item['cospar'],
+    #                         item['norad'],
+    #                         item['source'],
+    #                         item['additional_source'],
+    #                         item['data_status'],
+    #                         item['source_used_for_orbital_data'],
+    #                         item['cospar']
+    #                     ))
+                    
+    #         else:
+    #             logging.debug("Table 'ucs_removed_satellites' does not exist.")
+    #             if int(item['data_status']) == 5:
+    #                 logging.debug("Inserting into ucs_master_duplicates.(no table exists)")
+    #                 self.cur.execute(
+    #                     """ insert into ucs_master_duplicates (
+    #                         full_name,
+    #                         official_name,
+    #                         country,
+    #                         owner_country,
+    #                         owner,
+    #                         users,
+    #                         purpose,
+    #                         detail_purpose,
+    #                         orbit_class,
+    #                         orbit_type,
+    #                         in_geo,
+    #                         perigee,
+    #                         apogee,
+    #                         eccentricity,
+    #                         inclination,
+    #                         period,
+    #                         mass,
+    #                         dry_mass,
+    #                         power,
+    #                         launch_date,
+    #                         expected_lifetime,
+    #                         contractor,
+    #                         contractor_country,
+    #                         launch_site,
+    #                         launch_vehicle,
+    #                         cospar,
+    #                         norad,
+    #                         source,
+    #                         additional_source,
+    #                         data_status,
+    #                         source_used_for_orbital_data,
+    #                         id
+    #                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+    #                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+    #                     (
+    #                         item['full_name'],
+    #                         item['official_name'],
+    #                         item['country'],
+    #                         item['owner_country'],
+    #                         item['owner'],
+    #                         item['users'],
+    #                         item['purpose'],
+    #                         item['detail_purpose'],
+    #                         item['orbit_class'],
+    #                         item['orbit_type'],
+    #                         item['in_geo'],
+    #                         item['perigee'],
+    #                         item['apogee'],
+    #                         item['eccentricity'],
+    #                         item['inclination'],
+    #                         item['period'],
+    #                         item['mass'],
+    #                         item['dry_mass'],
+    #                         item['power'],
+    #                         item['launch_date'],
+    #                         item['expected_lifetime'],
+    #                         item['contractor'],
+    #                         item['contractor_country'],
+    #                         item['launch_site'],
+    #                         item['launch_vehicle'],
+    #                         item['cospar'],
+    #                         item['norad'],
+    #                         item['source'],
+    #                         item['additional_source'],
+    #                         item['data_status'],
+    #                         item['source_used_for_orbital_data'],
+    #                         item['id']
+    #                     ))
+    #             else:
+    #                 logging.debug("Inserting into ucs_master.(no table exists)")
+    #                 self.cur.execute(
+    #                     """ insert into ucs_master (
+    #                         full_name,
+    #                         official_name,
+    #                         country,
+    #                         owner_country,
+    #                         owner,
+    #                         users,
+    #                         purpose,
+    #                         detail_purpose,
+    #                         orbit_class,
+    #                         orbit_type,
+    #                         in_geo,
+    #                         perigee,
+    #                         apogee,
+    #                         eccentricity,
+    #                         inclination,
+    #                         period,
+    #                         mass,
+    #                         dry_mass,
+    #                         power,
+    #                         launch_date,
+    #                         expected_lifetime,
+    #                         contractor,
+    #                         contractor_country,
+    #                         launch_site,
+    #                         launch_vehicle,
+    #                         cospar,
+    #                         norad,
+    #                         source,
+    #                         additional_source,
+    #                         data_status,
+    #                         source_used_for_orbital_data
+    #                     ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+    #                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    #                     ON CONFLICT (cospar) DO NOTHING""",
+    #                     (
+    #                         item['full_name'],
+    #                         item['official_name'],
+    #                         item['country'],
+    #                         item['owner_country'],
+    #                         item['owner'],
+    #                         item['users'],
+    #                         item['purpose'],
+    #                         item['detail_purpose'],
+    #                         item['orbit_class'],
+    #                         item['orbit_type'],
+    #                         item['in_geo'],
+    #                         item['perigee'],
+    #                         item['apogee'],
+    #                         item['eccentricity'],
+    #                         item['inclination'],
+    #                         item['period'],
+    #                         item['mass'],
+    #                         item['dry_mass'],
+    #                         item['power'],
+    #                         item['launch_date'],
+    #                         item['expected_lifetime'],
+    #                         item['contractor'],
+    #                         item['contractor_country'],
+    #                         item['launch_site'],
+    #                         item['launch_vehicle'],
+    #                         item['cospar'],
+    #                         item['norad'],
+    #                         item['source'],
+    #                         item['additional_source'],
+    #                         item['data_status'],
+    #                         item['source_used_for_orbital_data']
+    #                     ))
+    #         self.connection.commit()
+    #     except Exception as e:
+    #         self.connection.rollback()
+    #         print(f'Error during item processing: {e}')
+    #     return item
+
+    #modified to not scrape back the removed item
+    #while still keeping the old method above for the time being      
     def process_item(self, item, spider):
+        print('HERE!')
         try:
             adapter = ItemAdapter(item)
             field_names = adapter.field_names()
-            if int(item['data_status']) == 5:
-                self.cur.execute(
-                    """ insert into ucs_master_duplicates (
-                        full_name,
-                        official_name,
-                        country,
-                        owner_country,
-                        owner,
-                        users,
-                        purpose,
-                        detail_purpose,
-                        orbit_class,
-                        orbit_type,
-                        in_geo,
-                        perigee,
-                        apogee,
-                        eccentricity,
-                        inclination,
-                        period,
-                        mass,
-                        dry_mass,
-                        power,
-                        launch_date,
-                        expected_lifetime,
-                        contractor,
-                        contractor_country,
-                        launch_site,
-                        launch_vehicle,
-                        cospar,
-                        norad,
-                        source,
-                        additional_source,
-                        data_status,
-                        source_used_for_orbital_data,
-                        id
-                    ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (
-                        item['full_name'],
-                        item['official_name'],
-                        item['country'],
-                        item['owner_country'],
-                        item['owner'],
-                        item['users'],
-                        item['purpose'],
-                        item['detail_purpose'],
-                        item['orbit_class'],
-                        item['orbit_type'],
-                        item['in_geo'],
-                        item['perigee'],
-                        item['apogee'],
-                        item['eccentricity'],
-                        item['inclination'],
-                        item['period'],
-                        item['mass'],
-                        item['dry_mass'],
-                        item['power'],
-                        item['launch_date'],
-                        item['expected_lifetime'],
-                        item['contractor'],
-                        item['contractor_country'],
-                        item['launch_site'],
-                        item['launch_vehicle'],
-                        item['cospar'],
-                        item['norad'],
-                        item['source'],
-                        item['additional_source'],
-                        item['data_status'],
-                        item['source_used_for_orbital_data'],
-                        item['id']
-                    ))
+            table_name = "ucs_removed_satellites"
+            #query = f"SELECT EXISTS (SELECT 1 FROM information_schema_tables WHERE table_name = {removed_satellites_table_name})"
+            #query = f"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'ucs_removed_satellites')"
+            sql_query = f"""SELECT exists (SELECT 1 FROM "{table_name}")"""
+            #print(sql_query)
+            self.cur.execute(sql_query)
+            table_exists = self.cur.fetchone()[0]
+            #print(table_exists)
+            print(f"cospar: {item['cospar']} and type: {type(item['cospar'])} ")
+            if table_exists:
+                logging.info("Table 'ucs_removed_satellites' exists.")
+                self.cur.execute("SELECT EXISTS (SELECT 1 FROM ucs_removed_satellites WHERE cospar = %s)",(item['cospar'],))
+                cospar_exists_in_duplicate = self.cur.fetchone()[0]
+                print(f'cospar_exists_in_duplicate: {cospar_exists_in_duplicate}')
+                # if cospar_exists_in_duplicate:
+                #     input()
+                #input()
+                if int(item['data_status']) == 5 and cospar_exists_in_duplicate:
+                    pass
+                elif int(item['data_status']) == 5 and not cospar_exists_in_duplicate:
+                    print('inserting into ucs_master_duplicates')
+                    self.cur.execute(
+                        """ insert into ucs_master_duplicates (
+                            full_name,
+                            official_name,
+                            country,
+                            owner_country,
+                            owner,
+                            users,
+                            purpose,
+                            detail_purpose,
+                            orbit_class,
+                            orbit_type,
+                            in_geo,
+                            perigee,
+                            apogee,
+                            eccentricity,
+                            inclination,
+                            period,
+                            mass,
+                            dry_mass,
+                            power,
+                            launch_date,
+                            expected_lifetime,
+                            contractor,
+                            contractor_country,
+                            launch_site,
+                            launch_vehicle,
+                            cospar,
+                            norad,
+                            source,
+                            additional_source,
+                            data_status,
+                            source_used_for_orbital_data,
+                            id
+                        ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (
+                            item['full_name'],
+                            item['official_name'],
+                            item['country'],
+                            item['owner_country'],
+                            item['owner'],
+                            item['users'],
+                            item['purpose'],
+                            item['detail_purpose'],
+                            item['orbit_class'],
+                            item['orbit_type'],
+                            item['in_geo'],
+                            item['perigee'],
+                            item['apogee'],
+                            item['eccentricity'],
+                            item['inclination'],
+                            item['period'],
+                            item['mass'],
+                            item['dry_mass'],
+                            item['power'],
+                            item['launch_date'],
+                            item['expected_lifetime'],
+                            item['contractor'],
+                            item['contractor_country'],
+                            item['launch_site'],
+                            item['launch_vehicle'],
+                            item['cospar'],
+                            item['norad'],
+                            item['source'],
+                            item['additional_source'],
+                            item['data_status'],
+                            item['source_used_for_orbital_data'],
+                            item['id']
+                        ))
+                elif int(item['data_status']) != 5 and not cospar_exists_in_duplicate:
+                    print('inserting into ucs_master')
+                    logging.debug("Inserting into ucs_master.(table exists)")
+                    print('LOL')
+                    #input()
+                    self.cur.execute(
+                        """ insert into ucs_master (
+                            full_name,
+                            official_name,
+                            country,
+                            owner_country,
+                            owner,
+                            users,
+                            purpose,
+                            detail_purpose,
+                            orbit_class,
+                            orbit_type,
+                            in_geo,
+                            perigee,
+                            apogee,
+                            eccentricity,
+                            inclination,
+                            period,
+                            mass,
+                            dry_mass,
+                            power,
+                            launch_date,
+                            expected_lifetime,
+                            contractor,
+                            contractor_country,
+                            launch_site,
+                            launch_vehicle,
+                            cospar,
+                            norad,
+                            source,
+                            additional_source,
+                            data_status,
+                            source_used_for_orbital_data
+                        )
+                        values ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (cospar) DO NOTHING""",
+                        (
+                            item['full_name'],
+                            item['official_name'],
+                            item['country'],
+                            item['owner_country'],
+                            item['owner'],
+                            item['users'],
+                            item['purpose'],
+                            item['detail_purpose'],
+                            item['orbit_class'],
+                            item['orbit_type'],
+                            item['in_geo'],
+                            item['perigee'],
+                            item['apogee'],
+                            item['eccentricity'],
+                            item['inclination'],
+                            item['period'],
+                            item['mass'],
+                            item['dry_mass'],
+                            item['power'],
+                            item['launch_date'],
+                            item['expected_lifetime'],
+                            item['contractor'],
+                            item['contractor_country'],
+                            item['launch_site'],
+                            item['launch_vehicle'],
+                            item['cospar'],
+                            item['norad'],
+                            item['source'],
+                            item['additional_source'],
+                            item['data_status'],
+                            item['source_used_for_orbital_data'],
+                        ))
+                else:
+                    pass
+                    
             else:
-                self.cur.execute(
-                    """ insert into ucs_master (
-                        full_name,
-                        official_name,
-                        country,
-                        owner_country,
-                        owner,
-                        users,
-                        purpose,
-                        detail_purpose,
-                        orbit_class,
-                        orbit_type,
-                        in_geo,
-                        perigee,
-                        apogee,
-                        eccentricity,
-                        inclination,
-                        period,
-                        mass,
-                        dry_mass,
-                        power,
-                        launch_date,
-                        expected_lifetime,
-                        contractor,
-                        contractor_country,
-                        launch_site,
-                        launch_vehicle,
-                        cospar,
-                        norad,
-                        source,
-                        additional_source,
-                        data_status,
-                        source_used_for_orbital_data
-                    ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (cospar) DO NOTHING""",
-                    (
-                        item['full_name'],
-                        item['official_name'],
-                        item['country'],
-                        item['owner_country'],
-                        item['owner'],
-                        item['users'],
-                        item['purpose'],
-                        item['detail_purpose'],
-                        item['orbit_class'],
-                        item['orbit_type'],
-                        item['in_geo'],
-                        item['perigee'],
-                        item['apogee'],
-                        item['eccentricity'],
-                        item['inclination'],
-                        item['period'],
-                        item['mass'],
-                        item['dry_mass'],
-                        item['power'],
-                        item['launch_date'],
-                        item['expected_lifetime'],
-                        item['contractor'],
-                        item['contractor_country'],
-                        item['launch_site'],
-                        item['launch_vehicle'],
-                        item['cospar'],
-                        item['norad'],
-                        item['source'],
-                        item['additional_source'],
-                        item['data_status'],
-                        item['source_used_for_orbital_data']
-                    ))
+                logging.debug("Table 'ucs_removed_satellites' does not exist.")
+                if int(item['data_status']) == 5:
+                    logging.debug("Inserting into ucs_master_duplicates.(no table exists)")
+                    self.cur.execute(
+                        """ insert into ucs_master_duplicates (
+                            full_name,
+                            official_name,
+                            country,
+                            owner_country,
+                            owner,
+                            users,
+                            purpose,
+                            detail_purpose,
+                            orbit_class,
+                            orbit_type,
+                            in_geo,
+                            perigee,
+                            apogee,
+                            eccentricity,
+                            inclination,
+                            period,
+                            mass,
+                            dry_mass,
+                            power,
+                            launch_date,
+                            expected_lifetime,
+                            contractor,
+                            contractor_country,
+                            launch_site,
+                            launch_vehicle,
+                            cospar,
+                            norad,
+                            source,
+                            additional_source,
+                            data_status,
+                            source_used_for_orbital_data,
+                            id
+                        ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (
+                            item['full_name'],
+                            item['official_name'],
+                            item['country'],
+                            item['owner_country'],
+                            item['owner'],
+                            item['users'],
+                            item['purpose'],
+                            item['detail_purpose'],
+                            item['orbit_class'],
+                            item['orbit_type'],
+                            item['in_geo'],
+                            item['perigee'],
+                            item['apogee'],
+                            item['eccentricity'],
+                            item['inclination'],
+                            item['period'],
+                            item['mass'],
+                            item['dry_mass'],
+                            item['power'],
+                            item['launch_date'],
+                            item['expected_lifetime'],
+                            item['contractor'],
+                            item['contractor_country'],
+                            item['launch_site'],
+                            item['launch_vehicle'],
+                            item['cospar'],
+                            item['norad'],
+                            item['source'],
+                            item['additional_source'],
+                            item['data_status'],
+                            item['source_used_for_orbital_data'],
+                            item['id']
+                        ))
+                else:
+                    logging.debug("Inserting into ucs_master.(no table exists)")
+                    self.cur.execute(
+                        """ insert into ucs_master (
+                            full_name,
+                            official_name,
+                            country,
+                            owner_country,
+                            owner,
+                            users,
+                            purpose,
+                            detail_purpose,
+                            orbit_class,
+                            orbit_type,
+                            in_geo,
+                            perigee,
+                            apogee,
+                            eccentricity,
+                            inclination,
+                            period,
+                            mass,
+                            dry_mass,
+                            power,
+                            launch_date,
+                            expected_lifetime,
+                            contractor,
+                            contractor_country,
+                            launch_site,
+                            launch_vehicle,
+                            cospar,
+                            norad,
+                            source,
+                            additional_source,
+                            data_status,
+                            source_used_for_orbital_data
+                        ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (cospar) DO NOTHING""",
+                        (
+                            item['full_name'],
+                            item['official_name'],
+                            item['country'],
+                            item['owner_country'],
+                            item['owner'],
+                            item['users'],
+                            item['purpose'],
+                            item['detail_purpose'],
+                            item['orbit_class'],
+                            item['orbit_type'],
+                            item['in_geo'],
+                            item['perigee'],
+                            item['apogee'],
+                            item['eccentricity'],
+                            item['inclination'],
+                            item['period'],
+                            item['mass'],
+                            item['dry_mass'],
+                            item['power'],
+                            item['launch_date'],
+                            item['expected_lifetime'],
+                            item['contractor'],
+                            item['contractor_country'],
+                            item['launch_site'],
+                            item['launch_vehicle'],
+                            item['cospar'],
+                            item['norad'],
+                            item['source'],
+                            item['additional_source'],
+                            item['data_status'],
+                            item['source_used_for_orbital_data']
+                        ))
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
             print(f'Error during item processing: {e}')
+            traceback.print_exc()
         return item
 
 class NtwoYOPipeline:
