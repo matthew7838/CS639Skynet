@@ -49,6 +49,63 @@ class Gatherer:
         self.connection.commit()
 
     def gather(self):
+        #needs to check ucs_master first whether an entry with similar cospar exists
+        #if it does then it should not be scraped
+        table_exists_sql_query = """
+            INSERT INTO ucs_new_launches (
+                full_name, 
+                official_name, 
+                owner_country, 
+                owner, 
+                users, 
+                orbit_class,
+                orbit_type,
+                in_geo, 
+                perigee, 
+                apogee, 
+                inclination, 
+                period, 
+                mass, 
+                dry_mass, 
+                launch_date, 
+                contractor, 
+                launch_site, 
+                launch_vehicle, 
+                cospar, 
+                norad,
+                source_used_for_orbital_data,
+                data_status)
+            SELECT
+                plname,
+                name,
+                state,
+                owner,
+                mission_sector,
+                oporbit,
+                orbit_type,
+                CASE 
+                    WHEN oporbit LIKE '%GEO%' THEN 1 
+                    ELSE 0 
+                END,
+                perigee,
+                apogee,
+                inc,
+                period,
+                mass,
+                drymass,
+                ldate,
+                manufacturer,
+                launch_site,
+                launch_vehicle,
+                piece,
+                satcat,
+                source_used_for_orbital_data,
+                data_status         
+            FROM planet4589
+            WHERE planet4589.piece NOT IN (SELECT cospar FROM ucs_master)
+            ON CONFLICT (cospar) DO NOTHING
+        """
+
         sql_query = """
             INSERT INTO ucs_new_launches (
                 full_name, 
@@ -103,7 +160,14 @@ class Gatherer:
             ON CONFLICT (cospar) DO NOTHING
         """
         try:
-            self.cur.execute(sql_query)
+            table_name = "ucs_master"
+            table_exist_query = f"""SELECT exists (SELECT 1 FROM "{table_name}")"""
+            self.cur.execute(table_exist_query)
+            table_exists = self.cur.fetchone()[0]
+            if table_exists:
+                self.cur.execute(table_exists_sql_query)
+            else:
+                self.cur.execute(sql_query)
             self.connection.commit()
         except UniqueViolation as e:
             self.connection.rollback()
@@ -114,29 +178,3 @@ class Gatherer:
         finally:
             self.cur.close()
             self.connection.close()
-
-
-
-            # SET
-            #     full_name = EXCLUDED.full_name,
-            #     official_name = EXCLUDED.official_name,
-            #     owner_country = EXCLUDED.owner_country,
-            #     owner = EXCLUDED.owner,
-            #     users = EXCLUDED.users,
-            #     orbit_class = EXCLUDED.orbit_class,
-            #     orbit_type = EXCLUDED.orbit_type,
-            #     in_geo = EXCLUDED.in_geo,
-            #     perigee = EXCLUDED.perigee,
-            #     apogee = EXCLUDED.apogee,
-            #     inclination = EXCLUDED.inclination,
-            #     period = EXCLUDED.period,
-            #     mass = EXCLUDED.mass,
-            #     dry_mass = EXCLUDED.dry_mass,
-            #     launch_date = EXCLUDED.launch_date,
-            #     contractor = EXCLUDED.contractor,
-            #     launch_site = EXCLUDED.launch_site,
-            #     launch_vehicle = EXCLUDED.launch_vehicle,
-            #     cospar = EXCLUDED.cospar,
-            #     norad = EXCLUDED.norad,
-            #     source_used_for_orbital_data = EXCLUDED.source_used_for_orbital_data,
-            #     data_status = EXCLUDED.data_status
