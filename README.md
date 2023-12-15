@@ -42,17 +42,17 @@ python Packages.py
 Installing chromedriver can be tricky. Please follow these steps:
 1. Go to https://googlechromelabs.github.io/chrome-for-testing/ to download the chromedriver for the version of chrome you are working with.<sup>*</sup>
 2. Unzip and copy the chromedriver executable
-3. Open finder and press cmd + shift + g
-4. Navigate to `/usr/local/bin/` by entering /usr/local/bin/ in the address box. In case you don't have a `/usr/local/bin/`, enter /usr/local/ and create a bin directory in /usr/local/
-5. Paste chromedriver in /usr/local/bin/
+3. Open finder and press cmd + shift + g. This will open a window where you can enter filepath addresses to hidden folders.
+4. Navigate to `/usr/local/bin/` by entering /usr/local/bin/ in the address box. In case you don't have a `/usr/local/bin/`, enter /usr/local/ and create a bin directory in this folder and open it.
+5. Paste chromedriver in `/usr/local/bin/``
 6. In `./skynet_scrapy/myspider/myspider/pipelines.py` lines 38-43 contain information on how to configure your executable_path. If you are on mac and have followed the above steps, you are done setting up the chromedriver.
 
-**Note:** You might run into an error when you run the scrapers for the first time, it happens because chromedriver binary is blocked by defauly by Apple. Please execute the following command in terminal:
+**Note:** You might run into an error when you run the scrapers for the first time, it happens because Apple blocks the execution of chromedriver binary by defauly. Please execute the following command in terminal:
 ```bash
 sudo xattr -d com.apple.quarantine $(which chromedriver)
 ```
 
-<sup>*</sup> We recommended you download both the chromedriver and chrome/chrome-headless-shell from the website. Once you install chrome, you will have Google Chrome for Testing on your machine which runs seperately from your personal chrome. Please execute the command below if you install this:
+<sup>*</sup> Although not mandatory, but we recommend you download both the chromedriver and chrome/chrome-headless-shell from the website. Once you install chrome, you will have Google Chrome for Testing on your machine which runs seperately from your personal version of chrome. Please execute the command below if you install this:
 ```bash
 sudo xattr -cr /Applications/Google\ Chrome\ for\ Testing.app
 ```
