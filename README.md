@@ -13,13 +13,6 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 - Selenium
 - BeautifulSoup4
 - PostgreSQL
-<<<<<<< HEAD
-- Scrapy
-- Selenium
-- BeautifulSoup4
-- PostgreSQL
-=======
->>>>>>> flask-test
 
 ## Setup
 There might be some formatting issues when running the program on a Windows machine, it is **strongly recommended** to 
@@ -46,11 +39,7 @@ source myvenv/bin/activate
 python Packages.py
 ```
 
-<<<<<<< HEAD
-## Database Setup Example
-=======
 ## Database Setup
->>>>>>> flask-test
 **Only for local users!!!** If you are using the remote database, you can skip this section.
 ### Prerequisites
 - PostgreSQL database installed. 
@@ -86,23 +75,6 @@ Create a database named skynetapp and assign it to the user:
    psql -U skynetapp -d skynetapp
    ```
 
-<<<<<<< HEAD
-For postgres, have a .env file in the root directory of the project with the following (replace with your credentials)
-```python
-#username
-DB_USER='username'
-#password
-DB_PASSWORD='password'
-#host
-DB_HOST='host' #usually localhost
-#port number
-DB_PORT=5432
-#database name
-DB_NAME='databasename'
-```
-
-=======
->>>>>>> flask-test
 ## About chromedriver on mac
 Installing chromedriver can be tricky. Please follow these steps:
 1. Go to https://googlechromelabs.github.io/chrome-for-testing/ to download the chromedriver for the version of chrome you are working with.<sup>*</sup>
@@ -140,8 +112,4 @@ sudo apt -y install chromium-browser
 ### Remove
 ![Remove](./README_image/Remove.png)
 ### Add New Row
-<<<<<<< HEAD
 ![Add](./README_image/AddNewRow.png)
-=======
-![Add](./README_image/AddNewRow.png)
->>>>>>> flask-test
