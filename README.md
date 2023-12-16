@@ -35,6 +35,13 @@ source myvenv/bin/activate
 #Install all required packages
 python Packages.py
 ```
-
+## Run
+```commandline
+# open virtual environment
+source myvenv/bin/activate  cd flask_backend && python app.py
+cd vue-frontend && npm run serve
+cd CS639Skynet
+cd skynet_scrapy/myspider && python skynet.py
+```
 ## Authors and acknowledgment
 Show your appreciation to those who have contributed to the project.
