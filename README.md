@@ -104,7 +104,7 @@ sudo xattr -cr /Applications/Google\ Chrome\ for\ Testing.app
 ```
 
 ## About chromedriver on ubuntu
-Installing chromedriver on fairly straight-forward. Run the following commands:
+Installing chromedriver on Ubuntu is fairly straight-forward. Run the following commands:
 ```bash
 sudo apt-get -y install xdg-utils
 pip3 install selenium==4.1.2 lxml html5lib
