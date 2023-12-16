@@ -103,6 +103,7 @@ class Gatherer:
                 data_status         
             FROM planet4589
             WHERE planet4589.piece NOT IN (SELECT cospar FROM ucs_master)
+            OR planet4589.piece NOT IN (SELECT cospar FROM ucs_removed_satellites)
             ON CONFLICT (cospar) DO NOTHING
         """
 
