@@ -106,6 +106,7 @@ class UcsdataItem(scrapy.Item):
     additional_source = scrapy.Field()
     data_status = scrapy.Field()
     source_used_for_orbital_data = scrapy.Field()
+    id = scrapy.Field()
 
 class NtwoYOItem(scrapy.Item):
     NORAD = scrapy.Field()
@@ -139,3 +140,8 @@ class TheSpaceReportItem(scrapy.Item):
     MissionSector = scrapy.Field()
     Crewed = scrapy.Field()
     FirstStageRecovery = scrapy.Field()
+
+class UNoosaItem(scrapy.Item):
+    COSPAR = scrapy.Field()
+    State = scrapy.Field()
+    UNRegistered = scrapy.Field()

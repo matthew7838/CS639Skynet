@@ -15,7 +15,10 @@ import re
 import time
 import psycopg2
 import logging
+from dotenv import load_dotenv
 
+#get env variables from .env
+load_dotenv()
 
 class TheSpaceReportSpider(scrapy.Spider):
 
@@ -45,11 +48,16 @@ class TheSpaceReportSpider(scrapy.Spider):
         options.add_argument('--disable-dev-shm-usage')
         self.driver = webdriver.Chrome(options=options, service=service)
 
-        hostname = 'localhost'
-        username = 'postgres'
-        password = 'skynet'
+        # hostname = 'localhost'
+        # username = 'skynetapp'
+        # password = 'skynet'
         # database = 'skynetapp' # not necessary
         # port = 5432 # using default
+
+        hostname = os.getenv('DB_HOST')
+        username = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
+        #database = os.getenv('DB_NAME')
         
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()

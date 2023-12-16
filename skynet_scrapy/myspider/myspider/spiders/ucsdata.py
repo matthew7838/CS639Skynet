@@ -7,6 +7,11 @@ from io import BytesIO
 import psycopg2
 from datetime import date, datetime
 import os
+import re
+from dotenv import load_dotenv
+
+#get env variables from .env
+load_dotenv()
 
 class UcsdataSpider(scrapy.Spider):
     name = "ucsdataspider"
@@ -25,10 +30,16 @@ class UcsdataSpider(scrapy.Spider):
         self.processed_count = 0
         self.scraped_items = []
         #to access database for data_status
-        hostname = 'localhost'  # this will be universal
-        username = 'postgres'  # create a new user with name: 'skynetapp'
-        password = 'skynet'  # make the password 'skynet' when you create the new user
-        # database = 'skynet' # we don't need this for this to work
+        # hostname = 'localhost'  # this will be universal
+        # username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        # password = 'skynet'  # make the password 'skynet' when you create the new user
+        # # database = 'skynet' # we don't need this for this to work
+
+        hostname = os.getenv('DB_HOST')
+        username = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
+        #database = os.getenv('DB_NAME')
+
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
 
@@ -137,6 +148,7 @@ class UcsdataSpider(scrapy.Spider):
             'Source.1': 'additional_source',
         }
         df.rename(columns=column_dic, inplace=True)
+        df['launch_date'] = df['launch_date'].apply(lambda x: re.search(r'\d{4}-\d{2}-\d{2}', str(x)).group() if re.search(r'\d{4}-\d{2}-\d{2}', str(x)) else None)
         #set default_data_status for every sat, this will change
         #when we get re_entry sats etc.
         df['data_status'] = default_data_status
@@ -148,6 +160,7 @@ class UcsdataSpider(scrapy.Spider):
         #change data_status = 2 for re-entered sats
         cospar_list = self.gather_reentry_sats()
         df.loc[df['cospar'].isin(cospar_list), 'data_status'] = 2
+        df['id'] = df.reset_index().index + 1
         filtered_df_cospar = df[df['data_status'] == 2]
         filtered_df_dupes = df[df['data_status'] == 5]
         #print(filtered_df_cospar)
