@@ -39,6 +39,15 @@ source myvenv/bin/activate
 python Packages.py
 ```
 
+## Run
+```commandline
+# open virtual environment
+source myvenv/bin/activate  cd flask_backend && python app.py
+cd vue-frontend && npm run serve
+cd CS639Skynet
+cd skynet_scrapy/myspider && python skynet.py
+```
+
 ## Database Setup
 **Only for local users!!!** If you are using the remote database, you can skip this section.
 ### Prerequisites
