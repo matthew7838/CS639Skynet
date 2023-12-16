@@ -8,6 +8,10 @@ import psycopg2
 from datetime import date, datetime
 import os
 import re
+from dotenv import load_dotenv
+
+#get env variables from .env
+load_dotenv()
 
 class UcsdataSpider(scrapy.Spider):
     name = "ucsdataspider"
@@ -26,10 +30,16 @@ class UcsdataSpider(scrapy.Spider):
         self.processed_count = 0
         self.scraped_items = []
         #to access database for data_status
-        hostname = 'localhost'  # this will be universal
-        username = 'skynetapp'  # create a new user with name: 'skynetapp'
-        password = 'skynet'  # make the password 'skynet' when you create the new user
-        # database = 'skynet' # we don't need this for this to work
+        # hostname = 'localhost'  # this will be universal
+        # username = 'skynetapp'  # create a new user with name: 'skynetapp'
+        # password = 'skynet'  # make the password 'skynet' when you create the new user
+        # # database = 'skynet' # we don't need this for this to work
+
+        hostname = os.getenv('DB_HOST')
+        username = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
+        #database = os.getenv('DB_NAME')
+
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
 

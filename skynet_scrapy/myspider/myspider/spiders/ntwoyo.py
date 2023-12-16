@@ -8,6 +8,10 @@ import pandas as pd
 import os
 import psycopg2
 import re
+from dotenv import load_dotenv
+
+#get env variables from .env
+load_dotenv()
 
 class NtwoYOSpider(scrapy.Spider):
  
@@ -23,12 +27,17 @@ class NtwoYOSpider(scrapy.Spider):
  
     def __init__(self):
         self.scraped_items = list()
-        hostname = 'localhost'
-        username = 'skynetapp'
-        password = 'skynet'
+        # hostname = 'localhost'
+        # username = 'skynetapp'
+        # password = 'skynet'
         # database = 'skynetapp' # not necessary
         # port = 5432 # using default
         
+        hostname = os.getenv('DB_HOST')
+        username = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
+        #database = os.getenv('DB_NAME')
+
         self.connection = psycopg2.connect(host=hostname, user=username, password=password)
         self.cur = self.connection.cursor()
         self.cur_set_period = self.connection.cursor()
