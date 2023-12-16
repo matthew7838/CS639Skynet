@@ -67,6 +67,3 @@ sudo apt -y install chromium-browser
 ```
 
 **Note:** In `./skynet_scrapy/myspider/myspider/spiders/thespacereport.py` lines 38-43 contain information on how to configure your executable_path. If you are on linux, simply follow instructions in the file.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
