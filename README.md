@@ -84,6 +84,20 @@ Create a database named skynetapp and assign it to the user:
    psql -U skynetapp -d skynetapp
    ```
 
+For postgres, have a .env file in the root directory of the project with the following (replace with your credentials)
+```python
+#username
+DB_USER='username'
+#password
+DB_PASSWORD='password'
+#host
+DB_HOST='host' #usually localhost
+#port number
+DB_PORT=5432
+#database name
+DB_NAME='databasename'
+```
+
 ## About chromedriver on mac
 Installing chromedriver can be tricky. Please follow these steps:
 1. Go to https://googlechromelabs.github.io/chrome-for-testing/ to download the chromedriver for the version of chrome you are working with.<sup>*</sup>
