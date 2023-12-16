@@ -11,6 +11,7 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 - Electron
 - Scrapy
 - Selenium
+- BeautifulSoup4
 - PostgreSQL
 
 ## Setup
@@ -45,9 +46,9 @@ Installing chromedriver can be tricky. Please follow these steps:
 3. Open finder and press cmd + shift + g. This will open a window where you can enter filepath addresses to hidden folders.
 4. Navigate to `/usr/local/bin/` by entering /usr/local/bin/ in the address box. In case you don't have a `/usr/local/bin/`, enter /usr/local/ and create a bin directory in this folder and open it.
 5. Paste chromedriver in `/usr/local/bin/``
-6. In `./skynet_scrapy/myspider/myspider/pipelines.py` lines 38-43 contain information on how to configure your executable_path. If you are on mac and have followed the above steps, you are done setting up the chromedriver.
+6. In `./skynet_scrapy/myspider/myspider/spiders/thespacereport.py` lines 38-43 contain information on how to configure your executable_path. If you are on mac and have followed the above steps, you are done setting up the chromedriver.
 
-**Note:** You might run into an error when you run the scrapers for the first time, it happens because Apple blocks the execution of chromedriver binary by defauly. Please execute the following command in terminal:
+**Note:** You might run into an error when you run the scrapers for the first time, it happens because Apple blocks the execution of chromedriver binary by default. Please execute the following command in terminal:
 ```bash
 sudo xattr -d com.apple.quarantine $(which chromedriver)
 ```
@@ -56,6 +57,16 @@ sudo xattr -d com.apple.quarantine $(which chromedriver)
 ```bash
 sudo xattr -cr /Applications/Google\ Chrome\ for\ Testing.app
 ```
+
+## About chromedriver on ubuntu
+Installing chromedriver on fairly straight-forward. Run the following commands:
+```bash
+sudo apt-get -y install xdg-utils
+pip3 install selenium==4.1.2 lxml html5lib
+sudo apt -y install chromium-browser
+```
+
+**Note:** In `./skynet_scrapy/myspider/myspider/spiders/thespacereport.py` lines 38-43 contain information on how to configure your executable_path. If you are on linux, simply follow instructions in the file.
 
 ## Authors and acknowledgment
 Show your appreciation to those who have contributed to the project.
