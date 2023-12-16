@@ -13,6 +13,10 @@ The UCS Satellite Database is the premier free and openly accessible database ca
 - Selenium
 - BeautifulSoup4
 - PostgreSQL
+- Scrapy
+- Selenium
+- BeautifulSoup4
+- PostgreSQL
 
 ## Setup
 There might be some formatting issues when running the program on a Windows machine, it is **strongly recommended** to 
