@@ -172,10 +172,19 @@ def get_satellites_new():
         # Search query parameter
         search_query = request.args.get('search', '', type=str)
 
+        # Data status filter parameter
+        data_status_filter = request.args.get('data_status')
+
         # Query with optional filtering
         query = Satellite_New.query
+
+        # Apply search query filter if provided
         if search_query:
-            query = query.filter(func.lower(Satellite_New.cospar).like(f'%{search_query.lower()}%'))  # Example for filtering by name
+            query = query.filter(func.lower(Satellite_New.cospar).like(f'%{search_query.lower()}%'))
+
+        # Apply data status filter if provided
+        if data_status_filter:
+            query = query.filter(Satellite_New.data_status == data_status_filter)
 
         # Get total count after filtering
         total_count = query.count()

@@ -131,6 +131,7 @@
                             ">
                         <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
+                        <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
                         <el-table-column prop="launch_date" label="Launch Date" width="200" :formatter="formatDate"
                             sortable>
                         </el-table-column>
@@ -405,7 +406,7 @@ export default {
                 if (this.tableData.length > 0) {
                     const allColumns = Object.keys(this.tableData[0]);
                     this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-                    this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', "launch_date"];
+                    this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', "launch_date", "cospar"];
                     this.editColumns = allColumns.filter(col => !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col));
                 }
             } catch (error) {

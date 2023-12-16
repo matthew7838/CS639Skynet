@@ -128,8 +128,9 @@
                     <el-table :data="filteredData" border style="width: 100%" :row-style="({ row }) =>
                         row.data_status === 1 ? { backgroundColor: '#ffe79f' } : {}
                         ">
-                        <el-table-column fixed prop="full_name" label="full_name" width="200"></el-table-column>
+                        <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
+                        <el-table-column prop="cospar" label="cospar" width="150"></el-table-column>
                         <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')"
                             width="150">
                             <!-- copy template to if want edit function -->
@@ -364,7 +365,7 @@ export default {
                         if (this.tableData.length > 0) {
                             const allColumns = Object.keys(this.tableData[0]);
                             this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'removal_reason', 'removal_source', 'username', 'removal_date'];
+                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'removal_reason', 'removal_source', 'username', 'removal_date', 'cospar'];
 
                             // Define editColumns as all columns that are not dynamic or manual
                             this.editColumns = allColumns.filter(col =>

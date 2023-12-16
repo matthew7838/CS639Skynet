@@ -125,14 +125,15 @@
 
                 <!--        Main Page-->
                 <el-main>
-                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_datedata', order: 'ascending' }"
-                        border style="width: 100%" :row-style="({ row }) =>
+                    <el-table :data="filteredData" :default-sort="{ prop: 'launch_datedata', order: 'ascending' }" border
+                        style="width: 100%" :row-style="({ row }) =>
                             row.data_status === 2 ? { backgroundColor: '#ffe79f' } : {}
                             ">
                         <el-table-column fixed prop="full_name" label="full_name" width="150"></el-table-column>
+                        <el-table-column fixed prop="cospar" label="cospar" width="150"></el-table-column>
                         <el-table-column prop="official_name" label="official_name" width="150"></el-table-column>
-                        <el-table-column prop="launch_date" label="Launch Date" sortable width="200" :formatter="formatDate"
-                            >
+                        <el-table-column prop="launch_date" label="Launch Date" sortable width="200"
+                            :formatter="formatDate">
                         </el-table-column>
                         <el-table-column prop="country" label="country" v-if="selectedColumns.includes('country')"
                             width="150">
@@ -163,7 +164,8 @@
                         <el-table-column v-for="column in dynamicColumns" :key="column" :prop="column" :label="column"
                             width="350">
                         </el-table-column>
-                        <el-table-column prop="data_status" label="data_status" width="350"></el-table-column>
+                        <el-table-column prop="data_status" label="data_status" width="150" :filters="dataStatusFilters"
+                            :filter-method="filterHandler" filter-placement="bottom-start"></el-table-column>
                         <el-table-column prop="additional_source" label="additional_source" width="350"></el-table-column>
                         <!--<el-table-column prop="data_status" label="data_status" width="150"></el-table-column> -->
                         <el-table-column fixed="right" label="Edit">
@@ -262,6 +264,10 @@ export default {
             isApproveModalVisible: false,
             approvalReason: '',
             tempApproveRow: null,
+            currentDataStatusFilter: null,
+            dataStatusFilters: [
+                { text: 'Highlighted', value: 2, column: 'data_status' },
+            ],
         };
     },
     mounted() {
@@ -269,6 +275,18 @@ export default {
         this.getUsername();
     },
     methods: {
+        filterHandler(value, row, column) {
+            // Check if the filter is for 'data_status'
+            if (column.property === 'data_status') {
+                console.log(value)
+                if (this.currentDataStatusFilter !== value) { // Check if the filter value has changed
+                    this.currentDataStatusFilter = value; // Update the current filter value
+                    this.fetchNewSatellites(); // Fetch data with the new filter
+                }
+                return true; // Return true to indicate that filtering is handled
+            }
+            // Other filtering logic...
+        },
         formatDate(row, column, cellValue) {
             if (cellValue) {
                 const date = new Date(cellValue);
@@ -381,38 +399,32 @@ export default {
                 this.isDenyModalVisible = false;
             }
         },
-
         async fetchNewSatellites() {
             const limit = 10;
             const page = this.currentPage;
+            let dataStatusFilter = this.currentDataStatusFilter;
             try {
-                /* const response = await axios.get(
-                  "http://localhost:8000/api/satellites_master?page=${page}&limit=${limit}"
-                ); // replace with your Flask app URL
-                this.tableData = response.data.map((row) => ({
-                  ...row,
-                  editing: false,
-                }));*/
-                axios.get(`http://localhost:8000/api/satellites_new?page=${page}&limit=${this.pageSize}&search=${encodeURIComponent(this.searchQuery)}`)
-                    .then(response => {
-                        this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
-                        console.log("Table Data:", this.tableData);
-                        this.totalItems = response.data.total_count;
-                        // Extract column names from the first row of tableData
-                        if (this.tableData.length > 0) {
-                            const allColumns = Object.keys(this.tableData[0]);
-                            this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
-                            this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', "launch_date"];
+                const response = await axios.get(`http://localhost:8000/api/satellites_new`, {
+                    params: {
+                        page: page,
+                        limit: limit,
+                        search: encodeURIComponent(this.searchQuery),
+                        data_status: dataStatusFilter // Include the filter in the request
+                    }
+                });
+                this.tableData = response.data.data.map(row => ({ ...row, editing: false }));
+                this.totalItems = response.data.total_count;
+                if (this.tableData.length > 0) {
+                    const allColumns = Object.keys(this.tableData[0]);
+                    this.dynamicColumns = allColumns.filter(col => col.startsWith('source'));
+                    this.manualColumns = ['additional_source', 'full_name', 'official_name', 'editing', 'country', 'data_status', 'cospar'];
 
-                            // Define editColumns as all columns that are not dynamic or manual
-                            this.editColumns = allColumns.filter(col =>
-                                !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
-                            );
-                        }
-                    })
-                    .catch(error => console.error("Error:", error));
-
-                console.log(this.tableData);
+                    // Define editColumns as all columns that are not dynamic or manual
+                    this.editColumns = allColumns.filter(col =>
+                        !this.dynamicColumns.includes(col) && !this.manualColumns.includes(col)
+                    );
+                    this.initializeNewRow();
+                }
             } catch (error) {
                 console.error("There was an error fetching the data:", error);
             }
@@ -490,10 +502,6 @@ export default {
             // Restore the original data from the backup
             Object.assign(row, this.backupRow);
             row.editing = false;
-        },
-        filterHandler(value, row) {
-            // Assuming you want to filter based on the satellite_name property
-            return row.un_registry_country === value;
         },
         toggleFilters() {
             this.filtersActive = !this.filtersActive;
