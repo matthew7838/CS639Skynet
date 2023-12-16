@@ -685,7 +685,8 @@ def new_deny_approval():
         if satellite_new:
             # Add to Satellite_Removed
             removed_satellite = Satellite_Removed(
-                **satellite_new.to_dict(),  # Convert to dict and remove 'id'
+                **satellite_new.to_dict(), 
+                username=name,# Convert to dict and remove 'id'
                 removal_source='ucs_new',
                 removal_reason=reason
             ) 

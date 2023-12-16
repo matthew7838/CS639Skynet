@@ -112,11 +112,6 @@
                         filter-placement="bottom-start" width="180"></el-table-column>
                     <el-table-column prop="reason" label="reason" :filters="removalReasonFilters"
                         :filter-method="filterHandler" filter-placement="bottom-start"></el-table-column>
-                    <el-table-column label="Operations" width="100">
-                        <template slot-scope="scope">
-                            <el-button type="text" size="small" @click="showDetails(scope.row)">Show</el-button>
-                        </template>
-                    </el-table-column>
                 </el-table>
             </el-main>
 
