@@ -39,6 +39,42 @@ source myvenv/bin/activate
 python Packages.py
 ```
 
+## Database Setup
+**Only for local users!!!** If you are using the remote database, you can skip this section.
+### Prerequisites
+- PostgreSQL database installed. 
+- Necessary permissions to access the database, typically as the postgres user.
+
+To configure PostgreSQL with a new user and database:
+
+1. **Log in as `postgres` user**
+   Use the command: 
+   ```bash
+   psql -U postgres
+   ```
+
+2. **Create a New User**
+   Create a user named `skynetapp` with the password `skynet`:
+   ```sql
+   CREATE USER skynetapp WITH PASSWORD 'skynet';
+   ```
+
+3. Create a Database
+Create a database named skynetapp and assign it to the user:
+    ```sql
+    CREATE DATABASE skynetapp OWNER skynetapp;
+    ```
+4. **Grant Privileges**
+    Grant all privileges on the database to the user:
+    ```sql
+    GRANT ALL PRIVILEGES ON DATABASE skynetapp TO skynetapp;
+    ```
+5. Test the setup
+   Log out and reconnect to the database as `skynetapp` to confirm configuration:
+   ```bash
+   psql -U skynetapp -d skynetapp
+   ```
+
 ## About chromedriver on mac
 Installing chromedriver can be tricky. Please follow these steps:
 1. Go to https://googlechromelabs.github.io/chrome-for-testing/ to download the chromedriver for the version of chrome you are working with.<sup>*</sup>
@@ -67,3 +103,13 @@ sudo apt -y install chromium-browser
 ```
 
 **Note:** In `./skynet_scrapy/myspider/myspider/spiders/thespacereport.py` lines 38-43 contain information on how to configure your executable_path. If you are on linux, simply follow instructions in the file.
+
+## Overview of Project
+### Home Page
+![Home Page](./README_image/HomePage.png)
+### Edit
+![Edit](./README_image/Edit.png)
+### Remove
+![Remove](./README_image/Remove.png)
+### Add New Row
+![Add](./README_image/AddNewRow.png)
